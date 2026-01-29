@@ -31,15 +31,27 @@ export interface ApiError {
 export const api = {
   get: async <T>(endpoint: string): Promise<T> => {
     try {
-      const response = await apiClient.get<T>(endpoint);
-      return response.data;
+    const response = await apiClient.get<T>(endpoint);
+    return response.data;
     } catch (error) {
       throw handleApiError(error);
     }
   },
   post: async <T>(endpoint: string, data: unknown): Promise<T> => {
     try {
-      const response = await apiClient.post<T>(endpoint, data);
+    const response = await apiClient.post<T>(endpoint, data);
+    return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  postForm: async <T>(endpoint: string, data: FormData): Promise<T> => {
+    try {
+      const response = await apiClient.post<T>(endpoint, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -47,7 +59,19 @@ export const api = {
   },
   put: async <T>(endpoint: string, data: unknown): Promise<T> => {
     try {
-      const response = await apiClient.put<T>(endpoint, data);
+    const response = await apiClient.put<T>(endpoint, data);
+    return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  putForm: async <T>(endpoint: string, data: FormData): Promise<T> => {
+    try {
+      const response = await apiClient.put<T>(endpoint, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error) {
       throw handleApiError(error);
@@ -55,8 +79,8 @@ export const api = {
   },
   delete: async <T>(endpoint: string): Promise<T> => {
     try {
-      const response = await apiClient.delete<T>(endpoint);
-      return response.data;
+    const response = await apiClient.delete<T>(endpoint);
+    return response.data;
     } catch (error) {
       throw handleApiError(error);
     }

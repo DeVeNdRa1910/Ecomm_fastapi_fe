@@ -78,6 +78,20 @@ export interface ForgotPasswordResponse {
   message: string;
 }
 
+export interface UpdateProfileRequest {
+  name?: string;
+  email?: string;
+  address?: string;
+  first_name?: string;
+  last_name?: string;
+  mobile_number?: string;
+  profile_image?: File | null;
+}
+
+export interface UpdateProfileResponse {
+  message: string;
+}
+
 export const authApi = {
   register: async (data: RegisterUserRequest): Promise<RegisterUserResponse> => {
     return api.post<RegisterUserResponse>('/auth/register', data);
@@ -94,6 +108,21 @@ export const authApi = {
   },
   getMe: async (): Promise<UserInfo> => {
     return api.get<UserInfo>('/user/me');
+  },
+  updateProfile: async (data: UpdateProfileRequest): Promise<UpdateProfileResponse> => {
+    const form = new FormData();
+    // Only append defined values to avoid overwriting with empty strings unless user provided them.
+    if (data.name !== undefined) form.append("name", data.name);
+    if (data.email !== undefined) form.append("email", data.email);
+    if (data.address !== undefined) form.append("address", data.address);
+    if (data.first_name !== undefined) form.append("first_name", data.first_name);
+    if (data.last_name !== undefined) form.append("last_name", data.last_name);
+    if (data.mobile_number !== undefined) form.append("mobile_number", data.mobile_number);
+    // API allows profile_image to be null; sending empty value removes the image.
+    if (data.profile_image === null) form.append("profile_image", "");
+    if (data.profile_image instanceof File) form.append("profile_image", data.profile_image);
+
+    return api.putForm<UpdateProfileResponse>("/user/me", form);
   },
   changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
     return api.post<ChangePasswordResponse>('/auth/change-password', data);
