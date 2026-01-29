@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { AnimatedBackground } from "@/components/animated-background"
+import { FileUpload } from "@/components/ui/file-upload"
 
 const changePasswordSchema = z
   .object({
@@ -652,24 +653,23 @@ export default function MyAccountPage() {
                       </p>
                     </div>
 
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label>Profile Image</Label>
-                      <Input
-                        type="file"
+                    {/* <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="profile_image">Profile Image</Label>
+                      <FileUpload
+                        className="max-w-2xl"
                         accept="image/*"
                         disabled={isUpdatingProfile}
-                        onChange={(e) => {
-                          const files = (e.target as HTMLInputElement).files
-                          if (!files || files.length === 0) return
+                        label=""
+                        helperText="Drag & drop your image here or click to upload"
+                        onChange={(files) => {
+                          if (!files.length) return
                           void handleImageSelected(files[0])
-                          // reset so selecting same file again triggers change
-                          ;(e.target as HTMLInputElement).value = ""
                         }}
                       />
                       <p className="text-xs text-muted-foreground">
                         Click the profile picture above to change/remove your image.
                       </p>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="flex gap-3">
