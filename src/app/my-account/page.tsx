@@ -5,17 +5,33 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { Dialog, DialogPanel, DialogTitle, Description } from "@headlessui/react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PasswordInput } from "@/components/ui/password-input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { authApi, type UserInfo } from "@/lib/auth-api"
 import { tokenManager } from "@/lib/cookies"
 import { useToast } from "@/lib/toast-context"
 import { validatePassword } from "@/lib/password-validation"
 import { useAuthStore } from "@/store/useAuthStore"
+import {
+  indianStates,
+  getLocationByPincode,
+  getLocationByPincodeAPI,
+  getCitiesByState,
+  type IndianState,
+} from "@/lib/indian-locations"
 import {
   Card,
   CardContent,
@@ -97,6 +113,13 @@ export default function MyAccountPage() {
   const [imageError, setImageError] = useState(false)
   const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null)
   const [isImageMenuOpen, setIsImageMenuOpen] = useState(false)
+  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false)
+  const [addressPincode, setAddressPincode] = useState("")
+  const [addressCountry, setAddressCountry] = useState("India")
+  const [addressState, setAddressState] = useState<IndianState | "">("")
+  const [addressCity, setAddressCity] = useState("")
+  const [addressText, setAddressText] = useState("")
+  const [isLoadingPincode, setIsLoadingPincode] = useState(false)
   const profileFileInputRef = useRef<HTMLInputElement | null>(null)
   const imageMenuRef = useRef<HTMLDivElement | null>(null)
   const router = useRouter()
@@ -312,6 +335,179 @@ export default function MyAccountPage() {
     } finally {
       setIsUpdatingProfile(false)
     }
+  }
+
+  // Handle pincode change - autofill state and city
+  const handlePincodeChange = async (pincode: string) => {
+    setAddressPincode(pincode)
+    if (pincode.length === 6) {
+      setIsLoadingPincode(true)
+      // Try local data first
+      const location = getLocationByPincode(pincode)
+      if (location) {
+        // Set state and city together
+        setAddressState(location.state)
+        setAddressCity(location.city)
+        setIsLoadingPincode(false)
+      } else {
+        // If not found locally, try API
+        try {
+          const apiLocation = await getLocationByPincodeAPI(pincode)
+          if (apiLocation) {
+            setAddressState(apiLocation.state)
+            setAddressCity(apiLocation.city)
+          } else {
+            // If pincode not found, clear state and city
+            setAddressState("")
+            setAddressCity("")
+            showError("Pincode not found. Please select state and city manually.")
+          }
+        } catch (error) {
+          console.error("Error fetching pincode:", error)
+          setAddressState("")
+          setAddressCity("")
+          showError("Unable to fetch pincode data. Please select state and city manually.")
+        } finally {
+          setIsLoadingPincode(false)
+        }
+      }
+    } else if (pincode.length < 6) {
+      // Clear state and city if pincode is incomplete
+      setAddressState("")
+      setAddressCity("")
+      setIsLoadingPincode(false)
+    }
+  }
+
+
+  // Parse existing address to extract components
+  const parseAddress = (address: string) => {
+    if (!address) {
+      return {
+        addressText: "",
+        pincode: "",
+        state: "" as IndianState | "",
+        city: "",
+      }
+    }
+
+    let remainingAddress = address.trim()
+    let pincode = ""
+    let state = "" as IndianState | ""
+    let city = ""
+
+    // Split by comma for easier parsing
+    const parts = remainingAddress.split(",").map((p) => p.trim()).filter((p) => p)
+
+    // Extract pincode (6-digit number) from any part
+    for (let i = 0; i < parts.length; i++) {
+      const pincodeMatch = parts[i].match(/\b\d{6}\b/)
+      if (pincodeMatch) {
+        pincode = pincodeMatch[0]
+        parts.splice(i, 1) // Remove pincode part
+        break
+      }
+    }
+
+    // Extract state (try to match with our state list)
+    for (let i = 0; i < parts.length; i++) {
+      for (const stateName of indianStates) {
+        // Try exact match (case-insensitive)
+        if (parts[i].toLowerCase() === stateName.toLowerCase()) {
+          state = stateName as IndianState
+          parts.splice(i, 1) // Remove state part
+          break
+        }
+      }
+      if (state) break
+    }
+
+    // Extract city (try to match with cities from the matched state, or any state)
+    if (state) {
+      const cities = getCitiesByState(state)
+      for (let i = 0; i < parts.length; i++) {
+        for (const cityName of cities) {
+          if (parts[i].toLowerCase() === cityName.toLowerCase()) {
+            city = cityName
+            parts.splice(i, 1) // Remove city part
+            break
+          }
+        }
+        if (city) break
+      }
+    } else {
+      // If state not found, try to find city from all states
+      for (let i = 0; i < parts.length; i++) {
+        for (const stateName of indianStates) {
+          const cities = getCitiesByState(stateName as IndianState)
+          for (const cityName of cities) {
+            if (parts[i].toLowerCase() === cityName.toLowerCase()) {
+              city = cityName
+              state = stateName as IndianState
+              parts.splice(i, 1) // Remove city part
+              break
+            }
+          }
+          if (state) break
+        }
+        if (state) break
+      }
+    }
+
+    // Remove "India" or "INDIA" if present
+    const filteredParts = parts.filter(
+      (p) => !/^(India|INDIA)$/i.test(p)
+    )
+
+    // Join remaining parts as address text
+    const addressText = filteredParts.join(", ").trim()
+
+    return {
+      addressText,
+      pincode,
+      state,
+      city,
+    }
+  }
+
+  // Handle state change - update available cities
+  const handleStateChange = (state: IndianState) => {
+    setAddressState(state)
+    setAddressCity("") // Reset city when state changes
+  }
+
+  // Handle saving address from modal
+  const handleSaveAddress = () => {
+    // Build the full address string
+    const addressParts: string[] = []
+    if (addressText.trim()) {
+      addressParts.push(addressText.trim())
+    }
+    if (addressCity) {
+      addressParts.push(addressCity)
+    }
+    if (addressState) {
+      addressParts.push(addressState)
+    }
+    if (addressPincode) {
+      addressParts.push(addressPincode)
+    }
+    if (addressCountry) {
+      addressParts.push(addressCountry)
+    }
+
+    const fullAddress = addressParts.join(", ")
+    
+    // Update the form value
+    setProfileValue("address", fullAddress, { shouldValidate: true })
+    
+    // Reset fields and close the modal
+    setAddressPincode("")
+    setAddressState("")
+    setAddressCity("")
+    setAddressText("")
+    setAddressCountry("India")
+    setIsAddressDialogOpen(false)
   }
 
   // Close image menu when clicking outside
@@ -561,7 +757,7 @@ export default function MyAccountPage() {
                         <p className="text-sm text-destructive">{profileErrors.name.message as string}</p>
                       )}
                     </div>
-
+ 
                     <div className="space-y-2">
                       <Label htmlFor="profile_email">Email</Label>
                       <Input
@@ -640,10 +836,13 @@ export default function MyAccountPage() {
 
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="profile_address">Address</Label>
-                      <Input
+                      <Textarea
                         id="profile_address"
                         maxLength={250}
+                        rows={4}
+                        placeholder="Enter your address"
                         {...registerProfile("address")}
+                        readOnly
                       />
                       {profileErrors.address && (
                         <p className="text-sm text-destructive">{profileErrors.address.message as string}</p>
@@ -651,9 +850,45 @@ export default function MyAccountPage() {
                       <p className="text-xs text-muted-foreground">
                         Max 250 characters
                       </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="bg-white text-black hover:bg-gray-100 border-black"
+                        onClick={async () => {
+                          // Initialize modal with current address if available
+                          const currentAddress = watchProfile("address") || userInfo?.address || ""
+                          
+                          // Parse the existing address
+                          const parsed = parseAddress(currentAddress)
+                          
+                          // Set all fields from parsed address
+                          setAddressText(parsed.addressText)
+                          setAddressPincode(parsed.pincode)
+                          setAddressState(parsed.state)
+                          setAddressCity(parsed.city)
+                          setAddressCountry("India")
+                          
+                          // If pincode is found but state/city not found, try to fetch from API
+                          if (parsed.pincode && parsed.pincode.length === 6 && (!parsed.state || !parsed.city)) {
+                            try {
+                              const apiLocation = await getLocationByPincodeAPI(parsed.pincode)
+                              if (apiLocation) {
+                                setAddressState(apiLocation.state)
+                                setAddressCity(apiLocation.city)
+                              }
+                            } catch (error) {
+                              console.error("Error fetching pincode data:", error)
+                            }
+                          }
+                          
+                          setIsAddressDialogOpen(true)
+                        }}
+                      >
+                        Edit
+                      </Button>
                     </div>
 
-                    {/* <div className="space-y-2 sm:col-span-2">
+                    <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="profile_image">Profile Image</Label>
                       <FileUpload
                         className="max-w-2xl"
@@ -669,7 +904,7 @@ export default function MyAccountPage() {
                       <p className="text-xs text-muted-foreground">
                         Click the profile picture above to change/remove your image.
                       </p>
-                    </div> */}
+                    </div> 
                   </div>
 
                   <div className="flex gap-3">
@@ -678,6 +913,159 @@ export default function MyAccountPage() {
                     </Button>
                   </div>
                 </form>
+
+                {/* Address Edit Dialog */}
+                <Dialog 
+                  open={isAddressDialogOpen} 
+                  onClose={() => {
+                    // Reset fields when closing without saving
+                    setAddressPincode("")
+                    setAddressState("")
+                    setAddressCity("")
+                    setAddressText("")
+                    setAddressCountry("India")
+                    setIsAddressDialogOpen(false)
+                  }} 
+                  className="relative z-50"
+                >
+                  <div className="fixed inset-0 bg-black/20 backdrop-blur-md" aria-hidden="true" />
+                  <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
+                    <DialogPanel className="max-w-2xl space-y-4 border bg-background/95 backdrop-blur-xl p-6 rounded-lg shadow-2xl w-full max-h-[90vh] overflow-y-auto">
+                      <DialogTitle className="font-bold text-xl">Edit Address</DialogTitle>
+                      <Description className="text-sm text-muted-foreground">
+                        Enter your complete address details
+                      </Description>
+                      <div className="space-y-4">
+                        {/* Pincode */}
+                        <div className="space-y-2">
+                          <Label htmlFor="dialog_pincode">PINCODE</Label>
+                          <div className="relative">
+                            <Input
+                              id="dialog_pincode"
+                              type="text"
+                              maxLength={6}
+                              placeholder="Enter 6-digit pincode"
+                              value={addressPincode}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, "") // Only digits
+                                void handlePincodeChange(value)
+                              }}
+                              disabled={isLoadingPincode}
+                            />
+                            {isLoadingPincode && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {isLoadingPincode
+                              ? "Fetching location data..."
+                              : "Enter pincode to auto-fill state and city"}
+                          </p>
+                        </div>
+
+                        {/* Country */}
+                        <div className="space-y-2">
+                          <Label htmlFor="dialog_country">Country</Label>
+                          <Input
+                            id="dialog_country"
+                            value={addressCountry}
+                            onChange={(e) => setAddressCountry(e.target.value)}
+                            readOnly
+                            className="bg-muted"
+                          />
+                        </div>
+
+                        {/* State */}
+                        <div className="space-y-2">
+                          <Label htmlFor="dialog_state">State</Label>
+                          <Select
+                            value={addressState}
+                            onValueChange={(value) => handleStateChange(value as IndianState)}
+                          >
+                            <SelectTrigger id="dialog_state">
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px] overflow-y-auto">
+                              {indianStates.map((state) => (
+                                <SelectItem key={state} value={state}>
+                                  {state}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* City */}
+                        <div className="space-y-2">
+                          <Label htmlFor="dialog_city">City</Label>
+                          <Select
+                            value={addressCity}
+                            onValueChange={setAddressCity}
+                            disabled={!addressState}
+                          >
+                            <SelectTrigger id="dialog_city">
+                              <SelectValue placeholder={addressState ? "Select city" : "Select state first"} />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-[300px] overflow-y-auto">
+                              {addressState && (
+                                <>
+                                  {/* Show cities from our list */}
+                                  {getCitiesByState(addressState).map((city) => (
+                                    <SelectItem key={city} value={city}>
+                                      {city}
+                                    </SelectItem>
+                                  ))}
+                                  {/* If city from API is not in our list, show it as an option */}
+                                  {addressCity && 
+                                   !getCitiesByState(addressState).includes(addressCity) && (
+                                    <SelectItem key={addressCity} value={addressCity}>
+                                      {addressCity}
+                                    </SelectItem>
+                                  )}
+                                </>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Address Textarea */}
+                        <div className="space-y-2">
+                          <Label htmlFor="dialog_address_text">Address</Label>
+                          <Textarea
+                            id="dialog_address_text"
+                            rows={4}
+                            maxLength={250}
+                            placeholder="Enter your street address, building name, etc."
+                            value={addressText}
+                            onChange={(e) => setAddressText(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            {addressText.length} / 250 characters
+                          </p>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-4 justify-end pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsAddressDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={handleSaveAddress}
+                          >
+                            Save Address
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogPanel>
+                  </div>
+                </Dialog>
               </CardContent>
             </Card>
 
