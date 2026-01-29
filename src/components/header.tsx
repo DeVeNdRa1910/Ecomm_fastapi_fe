@@ -14,15 +14,18 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserProfile } from "@/components/user-profile"
 import { tokenManager } from "@/lib/cookies"
+import { useAuthStore } from "@/store/useAuthStore"
 
 export function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const { user, isAuthenticated: isAuthFromStore } = useAuthStore()
 
   useEffect(() => {
     // Check if user is authenticated
     const checkAuth = () => {
       const token = tokenManager.getToken()
-      setIsAuthenticated(!!token)
+      const hasUser = !!user
+      setIsAuthenticated(!!token || hasUser)
     }
 
     // Initial check
@@ -43,7 +46,7 @@ export function Header() {
       clearInterval(interval)
       window.removeEventListener("auth-change", handleAuthChange)
     }
-  }, [])
+  }, [user])
   return (
     <header className=" sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 shadow-lg" data-scroll-section>
       <div className="mx-auto h-16 px-4">
@@ -146,13 +149,13 @@ export function Header() {
               <UserProfile />
             ) : (
               <>
-                <Button variant="outline" asChild className="shadow-md">
-                  <Link href="/signin">Sign In</Link>
-                </Button>
-                <Button variant="default" asChild className="shadow-md">
-                  <Link href="/signup">Sign Up</Link>
-                </Button>
-                <ThemeToggle />
+            <Button variant="outline" asChild className="shadow-md">
+              <Link href="/signin">Sign In</Link>
+            </Button>
+            <Button variant="default" asChild className="shadow-md">
+              <Link href="/signup">Sign Up</Link>
+            </Button>
+            <ThemeToggle />
               </>
             )}
           </div>

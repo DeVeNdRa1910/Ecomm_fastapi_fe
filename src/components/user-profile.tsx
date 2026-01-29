@@ -8,25 +8,38 @@ import { authApi, type UserInfo } from "@/lib/auth-api"
 import { useToast } from "@/lib/toast-context"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
+import { useAuthStore } from "@/store/useAuthStore"
 import { cn } from "@/lib/utils"
 
 export function UserProfile() {
   const [isOpen, setIsOpen] = useState(false)
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const [avatarError, setAvatarError] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { success, error: showError } = useToast()
   const { theme, setTheme } = useTheme()
+  const { user: userInfo, setUser, clearUser } = useAuthStore()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Fetch user info on mount
+  // If profile image changes (e.g. after updating profile), retry loading it
+  useEffect(() => {
+    setAvatarError(false)
+  }, [userInfo?.profile_image])
+
+  // Fetch user info on mount if not already in store
   useEffect(() => {
     const fetchUserInfo = async () => {
+      // If user info already exists in store, use it
+      if (userInfo) {
+        setIsLoading(false)
+        return
+      }
+
       // Check if token exists before making the request
       const token = tokenManager.getToken()
       if (!token) {
@@ -36,7 +49,7 @@ export function UserProfile() {
 
       try {
         const user = await authApi.getMe()
-        setUserInfo(user)
+        setUser(user)
       } catch (error) {
         // Only remove token on authentication errors (401, 403), not on network errors
         if (error instanceof Error && 'status' in error) {
@@ -44,6 +57,7 @@ export function UserProfile() {
           if (status === 401 || status === 403) {
             // Token is invalid or expired
             tokenManager.removeToken()
+            clearUser()
             // Dispatch event to update header
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new CustomEvent('auth-change'))
@@ -56,7 +70,7 @@ export function UserProfile() {
     }
 
     fetchUserInfo()
-  }, [])
+  }, [userInfo, setUser, clearUser])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -77,6 +91,8 @@ export function UserProfile() {
 
   const handleLogout = () => {
     tokenManager.removeToken()
+    clearUser()
+    setAvatarError(false)
     
     // Dispatch custom event to notify header of logout
     if (typeof window !== 'undefined') {
@@ -88,17 +104,11 @@ export function UserProfile() {
     router.push("/")
   }
 
-  const getInitials = (name?: string, email?: string) => {
-    if (name) {
-      const parts = name.trim().split(" ")
-      if (parts.length >= 2) {
-        return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-      }
-      return name[0]?.toUpperCase() || "U"
-    }
-    if (email) {
-      return email[0]?.toUpperCase() || "U"
-    }
+  const getAvatarLetter = (name?: string, email?: string) => {
+    const fromName = name?.trim()?.[0]
+    if (fromName) return fromName.toUpperCase()
+    const fromEmail = email?.trim()?.[0]
+    if (fromEmail) return fromEmail.toUpperCase()
     return "U"
   }
 
@@ -119,10 +129,21 @@ export function UserProfile() {
         className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
         aria-label="User profile"
       >
-        {/* Profile Picture Placeholder - Ready for future implementation */}
-        <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm shadow-md">
-          {getInitials(userInfo?.name as string, userInfo?.email as string)}
-        </div>
+        {/* Profile Image (fallback to first letter) */}
+        {userInfo?.profile_image && !avatarError ? (
+          <img
+            src={userInfo.profile_image}
+            alt="Profile"
+            className="h-10 w-10 rounded-full object-cover shadow-md border border-primary/20"
+            onError={() => setAvatarError(true)}
+            onLoad={() => setAvatarError(false)}
+            crossOrigin="anonymous"
+          />
+        ) : (
+          <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm shadow-md">
+            {getAvatarLetter(userInfo?.name, userInfo?.email)}
+          </div>
+        )}
         <span className="hidden md:block text-sm font-medium max-w-[120px] truncate">
           {displayName}
         </span>
@@ -133,10 +154,21 @@ export function UserProfile() {
         <div className="absolute right-0 mt-2 w-56 rounded-lg border bg-background shadow-lg z-50">
           <div className="p-4 border-b">
             <div className="flex items-center gap-3">
-              {/* Profile Picture Placeholder */}
-              <div className="h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-base shadow-md">
-                {getInitials(userInfo?.name as string, userInfo?.email as string)}
-              </div>
+              {/* Profile Image (fallback to first letter) */}
+              {userInfo?.profile_image && !avatarError ? (
+                <img
+                  src={userInfo.profile_image}
+                  alt="Profile"
+                  className="h-12 w-12 rounded-full object-cover shadow-md border border-primary/20"
+                  onError={() => setAvatarError(true)}
+                  onLoad={() => setAvatarError(false)}
+                  crossOrigin="anonymous"
+                />
+              ) : (
+                <div className="h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-base shadow-md">
+                  {getAvatarLetter(userInfo?.name, userInfo?.email)}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate">
                   {userInfo?.name || "User"}

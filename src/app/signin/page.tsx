@@ -16,6 +16,7 @@ import { authApi } from "@/lib/auth-api"
 import { tokenManager } from "@/lib/cookies"
 import { useToast } from "@/lib/toast-context"
 import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/store/useAuthStore"
 import {
   Card,
   CardContent,
@@ -48,6 +49,7 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { success, error: showError } = useToast()
+  const { setUser } = useAuthStore()
 
   const {
     register,
@@ -71,6 +73,15 @@ export default function SignInPage() {
       } else {
         showError("Login response missing token")
         return
+      }
+
+      // Fetch and store user info
+      try {
+        const userInfo = await authApi.getMe()
+        setUser(userInfo)
+      } catch (error) {
+        // If fetching user info fails, still proceed with login
+        // User info can be fetched later when needed
       }
 
       // Show success toast
