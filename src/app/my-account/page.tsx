@@ -685,7 +685,7 @@ export default function MyAccountPage() {
                           crossOrigin="anonymous"
                         />
                       ) : (
-                        <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-bold text-3xl shadow-lg border-4 border-primary/20 cursor-pointer">
+                        <div className="h-24 w-24 rounded-full bg-linear-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-bold text-3xl shadow-lg border-4 border-primary/20 cursor-pointer">
                           {getInitials(
                             userInfo?.name,
                             userInfo?.email,
