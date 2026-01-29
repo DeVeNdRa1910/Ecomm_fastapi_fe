@@ -35,33 +35,32 @@ const signUpSchema = z
   .object({
     name: z
       .string()
-      .min(1, "Name is required")
+      .min(1, { message: "Name is required" })
       .refine(
         (val) => val.trim().length > 0,
-        "Name field can't be empty"
+        { message: "Name field can't be empty" }
       )
       .refine(
         (val) => val.trim().length >= 4,
-        "Name field should have at least 4 characters"
+        { message: "Name field should have at least 4 characters" }
       ),
-    email: z.string().email("Please enter a valid email address"),
+    email: z.string().email({ message: "Please enter a valid email address" }),
     role: z.enum(["buyer", "seller"], {
-      required_error: "Please select a role",
+      message: "Please select a role",
     }),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(20, "Password must be at most 20 characters")
-      .refine(
-        (val) => {
-          const error = validatePassword(val)
-          return error === null
-        },
-        (val) => {
-          const error = validatePassword(val)
-          return { message: error || "Invalid password" }
+      .min(8, { message: "Password must be at least 8 characters" })
+      .max(20, { message: "Password must be at most 20 characters" })
+      .superRefine((val, ctx) => {
+        const error = validatePassword(val)
+        if (error) {
+          ctx.addIssue({
+            code: "custom",
+            message: error,
+          })
         }
-      ),
+      }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {

@@ -8,25 +8,32 @@ import { authApi, type UserInfo } from "@/lib/auth-api"
 import { useToast } from "@/lib/toast-context"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
+import { useAuthStore } from "@/store/useAuthStore"
 import { cn } from "@/lib/utils"
 
 export function UserProfile() {
   const [isOpen, setIsOpen] = useState(false)
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { success, error: showError } = useToast()
   const { theme, setTheme } = useTheme()
+  const { user: userInfo, setUser, clearUser } = useAuthStore()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Fetch user info on mount
+  // Fetch user info on mount if not already in store
   useEffect(() => {
     const fetchUserInfo = async () => {
+      // If user info already exists in store, use it
+      if (userInfo) {
+        setIsLoading(false)
+        return
+      }
+
       // Check if token exists before making the request
       const token = tokenManager.getToken()
       if (!token) {
@@ -36,7 +43,7 @@ export function UserProfile() {
 
       try {
         const user = await authApi.getMe()
-        setUserInfo(user)
+        setUser(user)
       } catch (error) {
         // Only remove token on authentication errors (401, 403), not on network errors
         if (error instanceof Error && 'status' in error) {
@@ -44,6 +51,7 @@ export function UserProfile() {
           if (status === 401 || status === 403) {
             // Token is invalid or expired
             tokenManager.removeToken()
+            clearUser()
             // Dispatch event to update header
             if (typeof window !== 'undefined') {
               window.dispatchEvent(new CustomEvent('auth-change'))
@@ -56,7 +64,7 @@ export function UserProfile() {
     }
 
     fetchUserInfo()
-  }, [])
+  }, [userInfo, setUser, clearUser])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -77,6 +85,7 @@ export function UserProfile() {
 
   const handleLogout = () => {
     tokenManager.removeToken()
+    clearUser()
     
     // Dispatch custom event to notify header of logout
     if (typeof window !== 'undefined') {

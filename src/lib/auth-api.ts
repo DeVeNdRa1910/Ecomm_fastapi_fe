@@ -35,10 +35,19 @@ export interface LoginResponse {
 }
 
 export interface UserInfo {
-  id?: string;
-  email?: string;
+  _id?: string;
   name?: string;
+  email?: string;
   role?: string;
+  password?: string;
+  is_verified?: boolean;
+  created_at?: string;
+  updates_at?: string;
+  address?: string;
+  first_name?: string;
+  last_name?: string;
+  mobile_number?: string;
+  profile_image?: string;
   [key: string]: unknown;
 }
 
@@ -84,7 +93,7 @@ export const authApi = {
     return api.post<LoginResponse>('/auth/login', data);
   },
   getMe: async (): Promise<UserInfo> => {
-    return api.get<UserInfo>('/auth/me');
+    return api.get<UserInfo>('/user/me');
   },
   changePassword: async (data: ChangePasswordRequest): Promise<ChangePasswordResponse> => {
     return api.post<ChangePasswordResponse>('/auth/change-password', data);

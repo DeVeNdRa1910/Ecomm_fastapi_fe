@@ -15,6 +15,7 @@ import { authApi, type UserInfo } from "@/lib/auth-api"
 import { tokenManager } from "@/lib/cookies"
 import { useToast } from "@/lib/toast-context"
 import { validatePassword } from "@/lib/password-validation"
+import { useAuthStore } from "@/store/useAuthStore"
 import {
   Card,
   CardContent,
@@ -51,11 +52,12 @@ const changePasswordSchema = z
 type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>
 
 export default function MyAccountPage() {
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const router = useRouter()
   const { success, error: showError } = useToast()
+  const { user: userInfo, setUser, clearUser } = useAuthStore()
 
   const {
     register,
@@ -76,6 +78,12 @@ export default function MyAccountPage() {
       }
 
       try {
+        // If user info already exists in store, use it
+        if (userInfo) {
+          setIsLoading(false)
+          return
+        }
+
         const user = await authApi.getMe()
         
         // Handle different possible response formats
@@ -90,22 +98,18 @@ export default function MyAccountPage() {
             userData = { name: user } as UserInfo
           }
         } else if (typeof user === 'object' && user !== null) {
-          // Map common field name variations
-          userData = {
-            id: (user as any).id || (user as any)._id || (user as any).user_id,
-            name: (user as any).name || (user as any).user_name || (user as any).full_name || (user as any).username,
-            email: (user as any).email || (user as any).user_email,
-            role: (user as any).role || (user as any).user_role,
-            ...user, // Spread to include any other fields
-          }
+          // Use the user data directly as it matches the API response
+          userData = user as UserInfo
         }
         
-        setUserInfo(userData)
+        setUser(userData)
+        setImageError(false) // Reset image error when user data is loaded
       } catch (error) {
         if (error instanceof Error && 'status' in error) {
           const status = (error as any).status
           if (status === 401 || status === 403) {
             tokenManager.removeToken()
+            clearUser()
             router.push("/signin")
           } else {
             showError("Failed to load user information")
@@ -139,7 +143,10 @@ export default function MyAccountPage() {
     }
   }
 
-  const getInitials = (name?: string, email?: string) => {
+  const getInitials = (name?: string, email?: string, firstName?: string, lastName?: string) => {
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase()
+    }
     if (name) {
       const parts = name.trim().split(" ")
       if (parts.length >= 2) {
@@ -153,13 +160,81 @@ export default function MyAccountPage() {
     return "U"
   }
 
+  const formatIndianDate = (dateString?: string) => {
+    if (!dateString) return "Not set"
+    try {
+      const date = new Date(dateString)
+      const day = date.getDate().toString().padStart(2, '0')
+      const month = (date.getMonth() + 1).toString().padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
+    } catch {
+      return dateString
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col" data-scroll-section>
         <Header />
-        <main className="flex-1 flex items-center justify-center py-12 px-4" data-scroll-section>
-          <div className="text-center">
-            <p className="text-muted-foreground">Loading...</p>
+        <main className="flex-1 py-8 px-4 sm:py-12 animated-background" data-scroll-section>
+          <div className="mx-auto max-w-6xl space-y-8">
+            {/* Header Skeleton */}
+            <div className="text-center sm:text-left space-y-2">
+              <div className="h-10 w-48 bg-muted animate-pulse rounded-md mx-auto sm:mx-0"></div>
+              <div className="h-5 w-64 bg-muted animate-pulse rounded-md mx-auto sm:mx-0"></div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Profile Information Card Skeleton */}
+              <Card className="shadow-xl">
+                <CardHeader>
+                  <div className="h-6 w-40 bg-muted animate-pulse rounded-md"></div>
+                  <div className="h-4 w-32 bg-muted animate-pulse rounded-md mt-2"></div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Profile Header Skeleton */}
+                  <div className="flex flex-col items-center gap-4 pb-4 border-b">
+                    <div className="h-24 w-24 rounded-full bg-muted animate-pulse"></div>
+                    <div className="text-center space-y-2 w-full">
+                      <div className="h-7 w-32 bg-muted animate-pulse rounded-md mx-auto"></div>
+                      <div className="h-4 w-48 bg-muted animate-pulse rounded-md mx-auto"></div>
+                      <div className="h-6 w-16 bg-muted animate-pulse rounded-full mx-auto"></div>
+                    </div>
+                  </div>
+
+                  {/* Information Grid Skeleton */}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} className="space-y-1">
+                        <div className="h-3 w-20 bg-muted animate-pulse rounded"></div>
+                        <div className="h-5 w-full bg-muted animate-pulse rounded"></div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Change Password Card Skeleton */}
+              <Card className="shadow-xl">
+                <CardHeader>
+                  <div className="h-6 w-36 bg-muted animate-pulse rounded-md"></div>
+                  <div className="h-4 w-56 bg-muted animate-pulse rounded-md mt-2"></div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="h-4 w-32 bg-muted animate-pulse rounded"></div>
+                      <div className="h-10 w-full bg-muted animate-pulse rounded-md"></div>
+                    </div>
+                  ))}
+                  <div className="h-3 w-full bg-muted animate-pulse rounded mt-2"></div>
+                </CardContent>
+                <CardFooter>
+                  <div className="h-10 w-full bg-muted animate-pulse rounded-md"></div>
+                </CardFooter>
+              </Card>
+            </div>
           </div>
         </main>
         <Footer />
@@ -170,14 +245,14 @@ export default function MyAccountPage() {
   return (
     <div className="flex min-h-screen flex-col" data-scroll-section>
       <Header />
-      <main className="flex-1 py-12 px-4" data-scroll-section>
-        <div className="mx-auto max-w-4xl space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">My Account</h1>
+      <main className="flex-1 py-8 px-4 sm:py-12 animated-background" data-scroll-section>
+        <div className="mx-auto max-w-6xl space-y-8">
+          <div className="text-center sm:text-left">
+            <h1 className="text-4xl font-bold tracking-tight">My Account</h1>
             <p className="text-muted-foreground mt-2">Manage your account settings and preferences</p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-2">
             {/* User Profile Card */}
             <Card className="shadow-xl">
               <CardHeader>
@@ -185,46 +260,81 @@ export default function MyAccountPage() {
                 <CardDescription>Your account details</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex items-center gap-4">
-                  {/* Profile Picture Placeholder */}
-                  <div className="h-20 w-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-2xl shadow-lg">
-                    {getInitials(userInfo?.name as string, userInfo?.email as string)}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold">{userInfo?.name || "User"}</h3>
-                    <p className="text-sm text-muted-foreground">{userInfo?.email || ""}</p>
+                {/* Profile Header */}
+                <div className="flex flex-col items-center gap-4 pb-4 border-b">
+                  {/* Profile Image or Placeholder */}
+                  {userInfo?.profile_image && !imageError ? (
+                    <div className="relative">
+                      <img
+                        src={userInfo.profile_image}
+                        alt="Profile"
+                        className="h-24 w-24 rounded-full object-cover shadow-lg border-4 border-primary/20"
+                        onError={() => setImageError(true)}
+                        onLoad={() => setImageError(false)}
+                        crossOrigin="anonymous"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground flex items-center justify-center font-bold text-3xl shadow-lg border-4 border-primary/20">
+                      {getInitials(
+                        userInfo?.name,
+                        userInfo?.email,
+                        userInfo?.first_name,
+                        userInfo?.last_name
+                      )}
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold">{userInfo?.name || "User"}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{userInfo?.email || ""}</p>
                     {userInfo?.role && (
-                      <p className="text-xs text-muted-foreground mt-1 capitalize">
+                      <span className="inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full bg-primary/10 text-primary capitalize">
                         {userInfo.role}
-                      </p>
+                      </span>
                     )}
                   </div>
                 </div>
 
-                <Separator />
-
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
-                    <p className="text-base font-medium mt-1">{userInfo?.name || userInfo?.email || "Not set"}</p>
+                {/* User Information Grid */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Username</Label>
+                    <p className="text-sm font-medium">{userInfo?.name || "Not set"}</p>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                    <p className="text-base font-medium mt-1">{userInfo?.email || "Not set"}</p>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</Label>
+                    <p className="text-sm font-medium break-all">{userInfo?.email || "Not set"}</p>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Role</Label>
-                    <p className="text-base font-medium mt-1 capitalize">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Role</Label>
+                    <p className="text-sm font-medium capitalize">
                       {userInfo?.role || "Not set"}
                     </p>
                   </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Account Created</Label>
+                    <p className="text-sm font-medium">
+                      {formatIndianDate(userInfo?.created_at)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">First Name</Label>
+                    <p className="text-sm font-medium">{userInfo?.first_name || "Not set"}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Last Name</Label>
+                    <p className="text-sm font-medium">{userInfo?.last_name || "Not set"}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Mobile Number</Label>
+                    <p className="text-sm font-medium">{userInfo?.mobile_number || "Not set"}</p>
+                  </div>
+                  <div className="space-y-1 sm:col-span-2">
+                    <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Address</Label>
+                    <p className="text-sm font-medium">{userInfo?.address || "Not set"}</p>
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full" disabled>
-                  Update Profile (Coming Soon)
-                </Button>
-              </CardFooter>
             </Card>
 
             {/* Change Password Card */}
