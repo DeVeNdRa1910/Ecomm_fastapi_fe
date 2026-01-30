@@ -100,9 +100,10 @@ export default function SignUpPage() {
       
       const response = await authApi.register(registerData)
       
-      // Store email in session storage for OTP verification
+      // Store email and role in session storage for OTP verification
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('verification_email', registerData.email)
+        sessionStorage.setItem('verification_role', registerData.role)
       }
       
       // Show success toast
