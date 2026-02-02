@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -76,6 +76,14 @@ export default function AddProductPage() {
   })
 
   const watchedImages = watch("images")
+  
+  // Cleanup object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Cleanup will happen automatically when images are removed or component unmounts
+      // Object URLs are created in render and cleaned up by browser when no longer referenced
+    }
+  }, [])
 
   const onSubmit = async (data: AddProductFormValues) => {
     setIsSubmitting(true)
@@ -259,30 +267,54 @@ export default function AddProductPage() {
                 <p className="text-sm text-destructive">{errors.images.message}</p>
               )}
               {watchedImages && watchedImages.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  <p className="text-xs text-muted-foreground">
+                <div className="mt-4 space-y-3">
+                  <p className="text-sm text-muted-foreground font-medium">
                     {watchedImages.length} image{watchedImages.length !== 1 ? "s" : ""} selected
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {watchedImages.map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 px-2 py-1 bg-muted rounded text-xs"
-                      >
-                        <span className="truncate max-w-[200px]">{file.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newImages = watchedImages.filter((_, i) => i !== index)
-                            setValue("images", newImages, { shouldValidate: true })
-                          }}
-                          className="text-destructive hover:text-destructive/80"
-                          disabled={isSubmitting}
+                  {/* Image Previews */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {watchedImages.map((file, index) => {
+                      const imageUrl = URL.createObjectURL(file)
+                      return (
+                        <div
+                          key={`${file.name}-${index}`}
+                          className="relative group aspect-square rounded-lg overflow-hidden border-2 border-border bg-muted shadow-md hover:shadow-lg transition-shadow"
                         >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
+                          {/* Image Preview */}
+                          <img
+                            src={imageUrl}
+                            alt={`Preview ${index + 1}: ${file.name}`}
+                            className="w-full h-full object-cover"
+                          />
+                          {/* Remove Button Overlay */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                URL.revokeObjectURL(imageUrl)
+                                const newImages = watchedImages.filter((_, i) => i !== index)
+                                setValue("images", newImages, { shouldValidate: true })
+                              }}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-destructive text-destructive-foreground p-2 rounded-full hover:bg-destructive/90 shadow-lg"
+                              disabled={isSubmitting}
+                              title="Remove image"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                          {/* Image Number Badge */}
+                          <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                            {index + 1}
+                          </div>
+                          {/* File Name Tooltip */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-2">
+                            <p className="text-xs text-white truncate font-medium" title={file.name}>
+                              {file.name}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}

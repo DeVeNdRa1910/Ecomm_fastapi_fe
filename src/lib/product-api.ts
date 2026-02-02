@@ -14,20 +14,26 @@ export interface AddProductResponse {
 }
 
 export interface Product {
-  _id: string;
+  _id?: string; // Used in admin/seller APIs and public APIs
+  id?: string; // Used in some public APIs
   title: string;
   description: string;
   price: number;
   category: string | null;
   seller_id: string;
-  quantity: number;
+  quantity?: number; // Not always present in public APIs
   product_image_urls: string[];
-  product_image_public_ids: string[];
+  product_image_public_ids?: string[]; // Not always present in public APIs
+  is_active?: boolean;
+  in_stock?: boolean; // Stock status from public API
 }
 
 export interface GetProductsResponse {
   seller_products: Product[];
 }
+
+// Public API returns a direct array of products, not wrapped in an object
+export type GetAllProductsResponse = Product[];
 
 export interface GetProductByIdResponse {
   product: {
@@ -39,6 +45,33 @@ export interface GetProductByIdResponse {
     seller_id: string;
     quantity: number;
     product_image_urls: string[];
+  };
+}
+
+// Public product response (direct product object, not wrapped)
+export interface PublicProduct {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  seller_id: string;
+  product_image_urls: string[];
+  is_active: boolean;
+}
+
+// Seller product response (for admin/seller pages)
+export interface SellerProductResponse {
+  product: {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    category: string;
+    seller_id: string;
+    quantity: number;
+    product_image_urls: string[];
+    is_active?: boolean;
   };
 }
 
@@ -109,8 +142,30 @@ export const productApi = {
   getProducts: async (): Promise<GetProductsResponse> => {
     return api.get<GetProductsResponse>('/product/');
   },
+  // Public API - Get all products without authentication
+  getAllProducts: async (): Promise<GetAllProductsResponse> => {
+    return api.publicGet<GetAllProductsResponse>('/product/all-products/');
+  },
+  // Public API - Get products by category (POST with form data)
+  getProductsByCategory: async (category: string): Promise<GetAllProductsResponse> => {
+    const formData = new URLSearchParams()
+    formData.append('category', category)
+    return api.publicPost<GetAllProductsResponse>('/product/by-category', formData.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+  },
   getProductById: async (productId: string): Promise<GetProductByIdResponse> => {
     return api.get<GetProductByIdResponse>(`/product/${productId}`);
+  },
+  // Public API - Get product by ID without authentication
+  getProductByIdPublic: async (productId: string): Promise<PublicProduct> => {
+    return api.publicGet<PublicProduct>(`/product/${productId}`);
+  },
+  // Seller API - Get seller product by ID (requires authentication)
+  getSellerProductById: async (productId: string): Promise<SellerProductResponse> => {
+    return api.get<SellerProductResponse>(`/product/selller/${productId}`);
   },
   deleteProduct: async (productId: string): Promise<DeleteProductResponse> => {
     return api.delete<DeleteProductResponse>(`/product/${productId}`);

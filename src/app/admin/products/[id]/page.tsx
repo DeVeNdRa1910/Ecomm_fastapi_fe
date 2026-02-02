@@ -58,7 +58,8 @@ export default function ProductDetailPage() {
 
       setIsLoading(true)
       try {
-        const response = await productApi.getProductById(productId)
+        // Use seller API endpoint (requires authentication)
+        const response = await productApi.getSellerProductById(productId)
         setProduct(response.product)
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to load product."

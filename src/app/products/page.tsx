@@ -2,26 +2,32 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { motion } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, Package, IndianRupee, ShoppingCart, Tag } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { IndianRupee, Package, ShoppingCart, Tag, Loader2 } from "lucide-react"
 import { productApi, type Product } from "@/lib/product-api"
 import { useToast } from "@/lib/toast-context"
-import Link from "next/link"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 
-export default function AdminProducts() {
+export default function ProductsPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const { error: showError } = useToast()
 
-  // Fetch products on mount
+  // Fetch products on mount using public API (no authentication required)
   const fetchProducts = async () => {
     setIsLoading(true)
     try {
-      const response = await productApi.getProducts()
-      setProducts(response.seller_products || [])
+      // API now returns a direct array of products
+      const allProducts = await productApi.getAllProducts()
+      // Filter to show only active products (if is_active field exists)
+      const activeProducts = (allProducts || []).filter(product => 
+        product.is_active !== false // Show if is_active is true or undefined
+      )
+      setProducts(activeProducts)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load products."
       showError(errorMessage)
@@ -49,76 +55,73 @@ export default function AdminProducts() {
     ).join(' ')
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground">
-            Manage your product catalog
-          </p>
-        </div>
-        <Button 
-          className="shadow-lg" 
-          onClick={() => router.push("/admin/products/add")}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Product
-        </Button>
-      </div>
+  // Helper to get product ID (handles both id and _id fields)
+  const getProductId = (product: Product) => {
+    return product.id || product._id || ''
+  }
 
-      {/* Products Grid */}
-      {isLoading ? (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Card key={i} className="shadow-lg border-border animate-pulse overflow-hidden">
-              <div className="h-64 bg-muted" />
-              <CardContent className="p-6 space-y-3">
-                <div className="h-4 bg-muted rounded w-3/4" />
-                <div className="h-3 bg-muted rounded w-full" />
-                <div className="h-3 bg-muted rounded w-2/3" />
-                <div className="h-6 bg-muted rounded w-1/2" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : products.length === 0 ? (
-        <Card className="shadow-lg border-border">
-          <CardHeader>
-            <CardTitle>Product List</CardTitle>
-            <CardDescription>All products in your store</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12">
-              <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">No products yet.</p>
-              <Button onClick={() => router.push("/admin/products/add")}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Your First Product
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing <span className="font-semibold text-foreground">{products.length}</span> product{products.length !== 1 ? "s" : ""}
-            </p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product, index) => (
+  return (
+    <div className="flex min-h-screen flex-col" data-scroll-section>
+      <Header />
+      <main className="flex-1" data-scroll-section>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+          <div className="container mx-auto px-4 py-12">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-12"
+            >
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500 bg-clip-text text-transparent">
+                Our Products
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Discover amazing products at great prices
+              </p>
+            </motion.div>
+
+            {/* Products Grid */}
+            {isLoading ? (
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {[...Array(8)].map((_, i) => (
+                  <Card key={i} className="shadow-lg border-border animate-pulse overflow-hidden">
+                    <div className="h-64 bg-muted" />
+                    <CardContent className="p-6 space-y-3">
+                      <div className="h-4 bg-muted rounded w-3/4" />
+                      <div className="h-3 bg-muted rounded w-full" />
+                      <div className="h-3 bg-muted rounded w-2/3" />
+                      <div className="h-6 bg-muted rounded w-1/2" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <Card className="shadow-lg border-border max-w-md mx-auto">
+                <CardContent className="p-12 text-center">
+                  <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-xl font-semibold mb-2">No Products Found</h3>
+                  <p className="text-muted-foreground">
+                    Check back later for new products!
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {products.map((product, index) => {
+                  const productId = getProductId(product)
+                  return (
               <motion.div
-                key={product._id}
+                key={productId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="h-full"
               >
-                <Link href={`/admin/products/${product._id}`}>
+                <Link href={`/products/${productId}`}>
                   <div className="relative group cursor-pointer h-full">
-                    {/* Blue Animated Border */}
-                    <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-blue-400 via-blue-500 via-blue-600 to-blue-700 opacity-75 group-hover:opacity-100 blur-sm group-hover:blur transition-all duration-300 animate-gradient-x-blue"></div>
+                    {/* VIBGYOR Animated Border */}
+                    <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-violet-500 via-indigo-500 via-blue-500 via-green-500 via-yellow-500 via-orange-500 to-red-500 opacity-75 group-hover:opacity-100 blur-sm group-hover:blur transition-all duration-300 animate-gradient-x"></div>
                     
                     {/* Card Content - Fixed height */}
                     <Card className="relative bg-card rounded-2xl border-0 shadow-lg group-hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col">
@@ -187,9 +190,9 @@ export default function AdminProducts() {
                             {formatPrice(product.price)}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {product.in_stock ? (
+                            {(product.in_stock === true || (product.in_stock === undefined && product.is_active !== false)) ? (
                               <span className="text-green-600 font-medium">
-                                In Stock
+                                {product.quantity ? `In Stock (${product.quantity})` : 'Available'}
                               </span>
                             ) : (
                               <span className="text-red-600 font-medium">
@@ -203,26 +206,31 @@ export default function AdminProducts() {
                   </div>
                 </Link>
               </motion.div>
-            ))}
+                  )
+                })}
           </div>
-        </>
-      )}
+            )}
+          </div>
 
-      {/* Add custom styles for animated blue gradient */}
-      <style jsx>{`
-        @keyframes gradient-x-blue {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x-blue {
-          background-size: 200% 200%;
-          animation: gradient-x-blue 3s ease infinite;
-        }
-      `}</style>
+          {/* Add custom styles for animated gradient */}
+          <style jsx>{`
+            @keyframes gradient-x {
+              0%, 100% {
+                background-position: 0% 50%;
+              }
+              50% {
+                background-position: 100% 50%;
+              }
+            }
+            .animate-gradient-x {
+              background-size: 200% 200%;
+              animation: gradient-x 3s ease infinite;
+            }
+          `}</style>
+        </div>
+      </main>
+      <Footer data-scroll-section />
     </div>
   )
 }
+
