@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -18,8 +19,24 @@ import {
   Globe
 } from "lucide-react"
 import Link from "next/link"
+import type { AboutPageData } from "./api/route"
 
-const features = [
+// Icon mapping
+const iconMap: Record<string, any> = {
+  ShoppingBag,
+  Shield,
+  Truck,
+  Headphones,
+  Award,
+  Users,
+  TrendingUp,
+  Heart,
+  Zap,
+  Globe
+}
+
+// Fallback static data
+const defaultFeatures = [
   {
     icon: ShoppingBag,
     title: "Wide Selection",
@@ -65,7 +82,14 @@ const stats = [
   { value: "99%", label: "Satisfaction Rate", icon: Heart }
 ]
 
-const values = [
+const defaultStats = [
+  { value: "10K+", label: "Happy Customers", icon: Users },
+  { value: "50K+", label: "Products Available", icon: ShoppingBag },
+  { value: "500+", label: "Trusted Sellers", icon: Shield },
+  { value: "99%", label: "Satisfaction Rate", icon: Heart }
+]
+
+const defaultValues = [
   {
     icon: Heart,
     title: "Customer First",
@@ -84,6 +108,71 @@ const values = [
 ]
 
 export default function AboutPage() {
+  const [aboutData, setAboutData] = useState<AboutPageData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchAboutData = async () => {
+      try {
+        const response = await fetch('/about/api')
+        if (response.ok) {
+          const data = await response.json()
+          setAboutData(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch about data:', error)
+        // Use default data on error
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchAboutData()
+  }, [])
+
+  // Use API data if available, otherwise use defaults
+  const hero = aboutData?.hero || {
+    title: "About fastapi_comm",
+    subtitle: "Your trusted e-commerce platform for quality products and exceptional service. We're committed to making online shopping simple, secure, and enjoyable."
+  }
+
+  const story = aboutData?.story || {
+    title: "Our Story",
+    paragraphs: [
+      "Founded with a vision to revolutionize online shopping, fastapi_comm has grown from a small startup into a trusted e-commerce platform serving thousands of customers worldwide.",
+      "We believe that shopping online should be effortless, secure, and enjoyable. That's why we've built a platform that combines cutting-edge technology with exceptional customer service.",
+      "Our mission is to connect buyers with quality products from trusted sellers, creating a seamless shopping experience that you can rely on."
+    ]
+  }
+
+  const stats = aboutData?.stats?.map(stat => ({
+    ...stat,
+    icon: iconMap[stat.icon] || Users
+  })) || defaultStats
+
+  const features = aboutData?.features?.map(feature => ({
+    ...feature,
+    icon: iconMap[feature.icon] || ShoppingBag
+  })) || defaultFeatures
+
+  const values = aboutData?.values?.map(value => ({
+    ...value,
+    icon: iconMap[value.icon] || Heart
+  })) || defaultValues
+
+  const cta = aboutData?.cta || {
+    title: "Ready to Start Shopping?",
+    description: "Explore our wide selection of quality products and discover amazing deals today.",
+    primaryButton: {
+      text: "Browse Products",
+      link: "/products"
+    },
+    secondaryButton: {
+      text: "View Categories",
+      link: "/categories"
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col" data-scroll-section>
       <Header />
@@ -105,7 +194,7 @@ export default function AboutPage() {
                   transition={{ duration: 0.8, delay: 0.2 }}
                   className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500 bg-clip-text text-transparent"
                 >
-                  About fastapi_comm
+                  {hero.title}
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
@@ -113,8 +202,7 @@ export default function AboutPage() {
                   transition={{ duration: 0.8, delay: 0.4 }}
                   className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
                 >
-                  Your trusted e-commerce platform for quality products and exceptional service.
-                  We're committed to making online shopping simple, secure, and enjoyable.
+                  {hero.subtitle}
                 </motion.p>
               </motion.div>
             </div>
@@ -131,20 +219,13 @@ export default function AboutPage() {
                   transition={{ duration: 0.8 }}
                 >
                   <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-violet-500 to-blue-500 bg-clip-text text-transparent">
-                    Our Story
+                    {story.title}
                   </h2>
-                  <p className="text-lg text-muted-foreground mb-4 leading-relaxed">
-                    Founded with a vision to revolutionize online shopping, fastapi_comm has grown from a small startup 
-                    into a trusted e-commerce platform serving thousands of customers worldwide.
-                  </p>
-                  <p className="text-lg text-muted-foreground mb-4 leading-relaxed">
-                    We believe that shopping online should be effortless, secure, and enjoyable. That's why we've built 
-                    a platform that combines cutting-edge technology with exceptional customer service.
-                  </p>
-                  <p className="text-lg text-muted-foreground leading-relaxed">
-                    Our mission is to connect buyers with quality products from trusted sellers, creating a seamless 
-                    shopping experience that you can rely on.
-                  </p>
+                  {story.paragraphs.map((paragraph, index) => (
+                    <p key={index} className={`text-lg text-muted-foreground leading-relaxed ${index < story.paragraphs.length - 1 ? 'mb-4' : ''}`}>
+                      {paragraph}
+                    </p>
+                  ))}
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, x: 50 }}
@@ -339,7 +420,7 @@ export default function AboutPage() {
                     transition={{ duration: 0.6 }}
                     className="text-3xl md:text-5xl font-bold text-white mb-4"
                   >
-                    Ready to Start Shopping?
+                    {cta.title}
                   </motion.h2>
                   <motion.p
                     initial={{ opacity: 0, y: 20 }}
@@ -348,7 +429,7 @@ export default function AboutPage() {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="text-xl text-white/90 mb-8 max-w-2xl mx-auto"
                   >
-                    Explore our wide selection of quality products and discover amazing deals today.
+                    {cta.description}
                   </motion.p>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -358,13 +439,13 @@ export default function AboutPage() {
                     className="flex flex-col sm:flex-row gap-4 justify-center"
                   >
                     <Button asChild size="lg" variant="secondary" className="shadow-lg">
-                      <Link href="/products">
-                        Browse Products
+                      <Link href={cta.primaryButton.link}>
+                        {cta.primaryButton.text}
                       </Link>
                     </Button>
                     <Button asChild size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 shadow-lg">
-                      <Link href="/categories">
-                        View Categories
+                      <Link href={cta.secondaryButton.link}>
+                        {cta.secondaryButton.text}
                       </Link>
                     </Button>
                   </motion.div>
