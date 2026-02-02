@@ -237,7 +237,15 @@ export default function CartPage() {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => router.back()}
+            onClick={() => {
+              // Check if there's history to go back to
+              if (window.history.length > 1) {
+                router.back()
+              } else {
+                // Fallback to home page if no history
+                router.push('/')
+              }
+            }}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

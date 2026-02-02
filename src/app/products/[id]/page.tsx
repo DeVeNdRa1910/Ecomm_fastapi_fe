@@ -199,9 +199,19 @@ export default function ProductDetailPage() {
               <p className="text-muted-foreground mb-6">
                 The product you're looking for doesn't exist.
               </p>
-              <Button onClick={() => router.push("/products")}>
+              <Button 
+                onClick={() => {
+                  // Check if there's history to go back to
+                  if (window.history.length > 1) {
+                    router.back()
+                  } else {
+                    // Fallback to products page if no history
+                    router.push("/products")
+                  }
+                }}
+              >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Products
+                Back
               </Button>
             </CardContent>
           </Card>
@@ -229,11 +239,19 @@ export default function ProductDetailPage() {
         >
           <Button
             variant="outline"
-            onClick={() => router.push("/products")}
+            onClick={() => {
+              // Check if there's history to go back to
+              if (window.history.length > 1) {
+                router.back()
+              } else {
+                // Fallback to products page if no history
+                router.push("/products")
+              }
+            }}
             className="shadow-lg"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Products
+            Back
           </Button>
         </motion.div>
 
