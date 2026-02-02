@@ -15,6 +15,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { UserProfile } from "@/components/user-profile"
 import { tokenManager } from "@/lib/cookies"
 import { useAuthStore } from "@/store/useAuthStore"
+import { ShoppingCart } from "lucide-react"
 
 export function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -133,8 +134,21 @@ export function Header() {
             </NavigationMenu>
           </div>
 
-          {/* Right: User Profile or Sign In/Sign Up, and Theme Toggle */}
+          {/* Right: User Profile or Sign In/Sign Up, Cart, and Theme Toggle */}
           <div className="flex items-center justify-end gap-2 shrink-0">
+            {/* Cart Icon - Show for authenticated users */}
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="relative shadow-md hover:shadow-lg transition-shadow"
+              >
+                <Link href="/cart">
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              </Button>
+            )}
             {isAuthenticated ? (
               <UserProfile />
             ) : (

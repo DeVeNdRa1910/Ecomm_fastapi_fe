@@ -16,10 +16,14 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { productApi } from "@/lib/product-api"
+import { cartApi } from "@/lib/cart-api"
 import { useToast } from "@/lib/toast-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { tokenManager } from "@/lib/cookies"
 
 interface ProductDetail {
   id?: string
@@ -37,7 +41,7 @@ export default function ProductDetailPage() {
   const router = useRouter()
   const params = useParams()
   const productId = params.id as string
-  const { error: showError } = useToast()
+  const { success, error: showError } = useToast()
   
   const [product, setProduct] = useState<ProductDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -48,6 +52,8 @@ export default function ProductDetailPage() {
   const [isZooming, setIsZooming] = useState(false)
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [quantity, setQuantity] = useState(1)
   const imageRef = useRef<HTMLDivElement>(null)
   const zoomRef = useRef<HTMLDivElement>(null)
 
@@ -134,6 +140,36 @@ export default function ProductDetailPage() {
 
   const handleMouseLeave = () => {
     setIsZooming(false)
+  }
+
+  const handleAddToCart = async () => {
+    const token = tokenManager.getToken()
+    if (!token) {
+      showError("Please sign in to add items to cart")
+      setTimeout(() => {
+        router.push("/signin")
+      }, 2000)
+      return
+    }
+
+    if (!product) return
+
+    const currentProductId = product.id || product._id || productId
+    if (!currentProductId) {
+      showError("Product ID is missing")
+      return
+    }
+
+    setIsAddingToCart(true)
+    try {
+      const response = await cartApi.addToCart(currentProductId, quantity)
+      success(response.message || "Product added to cart successfully!")
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to add product to cart. Please try again."
+      showError(errorMessage)
+    } finally {
+      setIsAddingToCart(false)
+    }
   }
 
   if (isLoading) {
@@ -397,20 +433,72 @@ export default function ProductDetailPage() {
                 </CardContent>
               </Card>
 
+              {/* Quantity Selector */}
+              {product.is_active !== false && (
+                <div className="mb-6">
+                  <Label htmlFor="quantity" className="text-sm font-medium mb-2 block">
+                    Quantity
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                      disabled={quantity <= 1 || isAddingToCart}
+                      className="h-10 w-10"
+                    >
+                      <span className="text-lg">-</span>
+                    </Button>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 1
+                        setQuantity(Math.max(1, val))
+                      }}
+                      className="w-20 text-center"
+                      disabled={isAddingToCart}
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setQuantity(prev => prev + 1)}
+                      disabled={isAddingToCart}
+                      className="h-10 w-10"
+                    >
+                      <span className="text-lg">+</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
+                  onClick={handleAddToCart}
                   className="flex-1 shadow-lg bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500 hover:from-violet-600 hover:via-indigo-600 hover:to-blue-600 text-white"
-                  disabled={product.is_active === false}
+                  disabled={product.is_active === false || isAddingToCart}
                 >
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                  {product.is_active !== false ? 'Add to Cart' : 'Out of Stock'}
+                  {isAddingToCart ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      {product.is_active !== false ? 'Add to Cart' : 'Out of Stock'}
+                    </>
+                  )}
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
                   className="flex-1 shadow-lg"
+                  disabled={product.is_active === false || isAddingToCart}
                 >
                   Buy Now
                 </Button>
