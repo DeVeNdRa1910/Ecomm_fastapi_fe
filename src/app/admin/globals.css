@@ -92,5 +92,96 @@ html[data-admin="true"].dark body {
   box-shadow: 0 0 100px rgba(59, 130, 246, 0.1);
 }
 
+/* Custom scrollbar for admin panel */
+html[data-admin="true"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-admin="true"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html[data-admin="true"] ::-webkit-scrollbar-thumb {
+  background: var(--admin-primary);
+  border-radius: 4px;
+}
+
+html[data-admin="true"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-primary);
+  opacity: 0.8;
+}
+
+html[data-admin="true"] * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-primary) transparent;
+}
+
+/* Ensure Select dropdown Viewport is scrollable with visible scrollbar */
+html[data-admin="true"] [role="listbox"] {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--admin-primary) var(--admin-muted) !important;
+}
+
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
+}
+
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-track {
+  background: var(--admin-muted) !important;
+  border-radius: 4px !important;
+}
+
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-thumb {
+  background: var(--admin-primary) !important;
+  border-radius: 4px !important;
+  min-height: 20px !important;
+}
+
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-primary) !important;
+  opacity: 0.9 !important;
+}
+
+/* Target Radix Select Viewport directly - ensure scrolling works */
+html[data-admin="true"] [data-radix-select-viewport],
+html[data-admin="true"] [role="listbox"] {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--admin-primary) var(--admin-muted) !important;
+}
+
+html[data-admin="true"] [data-radix-select-viewport]::-webkit-scrollbar,
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
+  -webkit-appearance: none !important;
+}
+
+html[data-admin="true"] [data-radix-select-viewport]::-webkit-scrollbar-track,
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-track {
+  background: var(--admin-muted) !important;
+  border-radius: 4px !important;
+}
+
+html[data-admin="true"] [data-radix-select-viewport]::-webkit-scrollbar-thumb,
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-thumb {
+  background: var(--admin-primary) !important;
+  border-radius: 4px !important;
+  min-height: 20px !important;
+}
+
+html[data-admin="true"] [data-radix-select-viewport]::-webkit-scrollbar-thumb:hover,
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-primary) !important;
+  opacity: 0.9 !important;
+}
+
 
 

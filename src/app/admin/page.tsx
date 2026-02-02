@@ -1,13 +1,30 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Package, Users, DollarSign, TrendingUp } from "lucide-react"
+import { productApi } from "@/lib/product-api"
 
 export default function AdminDashboard() {
+  const [productCount, setProductCount] = useState(0)
+
+  useEffect(() => {
+    const fetchProductCount = async () => {
+      try {
+        const response = await productApi.getProducts()
+        setProductCount(response.seller_products?.length || 0)
+      } catch (error) {
+        // Silently fail - product count is not critical for dashboard
+        console.error("Failed to fetch product count:", error)
+      }
+    }
+    fetchProductCount()
+  }, [])
+
   const stats = [
     {
       title: "Total Products",
-      value: "0",
+      value: productCount.toString(),
       description: "Products in your store",
       icon: Package,
       color: "text-blue-500",

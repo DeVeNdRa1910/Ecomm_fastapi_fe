@@ -13,6 +13,8 @@ type FileUploadProps = {
   className?: string
   label?: string
   helperText?: string
+  value?: File[] // Controlled mode: existing files
+  accumulate?: boolean // If true, merge new files with existing ones
 }
 
 export function FileUpload({
@@ -23,11 +25,16 @@ export function FileUpload({
   className,
   label = "Upload file",
   helperText = "Drag or drop your files here or click to upload",
+  value,
+  accumulate = false,
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isHover, setIsHover] = useState(false)
-  const [files, setFiles] = useState<File[]>([])
+  const [internalFiles, setInternalFiles] = useState<File[]>([])
+  
+  // Use controlled value if provided, otherwise use internal state
+  const files = value !== undefined ? value : internalFiles
 
   const prettyFiles = useMemo(() => {
     if (!files.length) return ""
@@ -41,14 +48,39 @@ export function FileUpload({
   }
 
   const setAndEmit = (next: File[]) => {
-    setFiles(next)
+    if (value === undefined) {
+      // Only update internal state if not controlled
+      setInternalFiles(next)
+    }
     onChange?.(next)
+  }
+
+  const mergeFiles = (newFiles: File[]): File[] => {
+    if (!accumulate || value === undefined) {
+      return newFiles
+    }
+    // Merge new files with existing, avoiding duplicates
+    const merged = [...value]
+    newFiles.forEach((newFile) => {
+      const exists = merged.some(
+        (existingFile) =>
+          existingFile.name === newFile.name &&
+          existingFile.size === newFile.size &&
+          existingFile.lastModified === newFile.lastModified
+      )
+      if (!exists) {
+        merged.push(newFile)
+      }
+    })
+    return merged
   }
 
   const onInputChange = (fileList: FileList | null) => {
     if (!fileList) return
-    const next = Array.from(fileList)
-    setAndEmit(multiple ? next : next.slice(0, 1))
+    const selectedFiles = Array.from(fileList)
+    const next = multiple ? selectedFiles : selectedFiles.slice(0, 1)
+    const finalFiles = accumulate ? mergeFiles(next) : next
+    setAndEmit(finalFiles)
   }
 
   const onDrop = (e: React.DragEvent) => {
@@ -58,7 +90,9 @@ export function FileUpload({
     setIsDragging(false)
     const dropped = Array.from(e.dataTransfer.files || [])
     const filtered = accept === "image/*" ? dropped.filter((f) => f.type.startsWith("image/")) : dropped
-    setAndEmit(multiple ? filtered : filtered.slice(0, 1))
+    const next = multiple ? filtered : filtered.slice(0, 1)
+    const finalFiles = accumulate ? mergeFiles(next) : next
+    setAndEmit(finalFiles)
   }
 
   return (

@@ -13,10 +13,12 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  User
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { AdminUserProfile } from "@/components/admin-user-profile"
 import "./globals.css"
 
 export default function AdminLayout({
@@ -106,8 +108,10 @@ export default function AdminLayout({
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/my-account", label: "My Account", icon: User },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ]
+
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -192,9 +196,8 @@ export default function AdminLayout({
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              {user?.name || "Admin"}
-            </span>
+            {/* User Profile Dropdown - Same as buyer platform */}
+            <AdminUserProfile />
           </div>
         </header>
 
