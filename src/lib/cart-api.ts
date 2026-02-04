@@ -89,25 +89,45 @@ export const cartApi = {
     });
     return api.put<AddToCartResponse>(`/cart/update-product?${params.toString()}`, {});
   },
-  // Remove item from cart (requires authentication)
-  // API: DELETE /cart/{product_id} with product_id as query parameter
-  // Note: Despite {product_id} in path, API expects it as query parameter
+  // Decrease cart item quantity by one (requires authentication)
+  // API: DELETE /cart/{product_id}
+  // Parameter: product_id (required, path parameter)
+  // Response: string on success (200) or validation error (422)
+  decreaseCartItem: async (productId: string): Promise<RemoveCartItemResponse> => {
+    // API endpoint: DELETE /cart/{product_id}
+    // product_id is passed as path parameter
+    // This decreases quantity by one, or removes if quantity is 1
+    const response = await api.delete<string | RemoveCartItemResponse>(`/cart/${productId}`);
+    // Handle string response (API returns plain string on success)
+    if (typeof response === 'string') {
+      return { message: response };
+    }
+    return response;
+  },
+  // Remove item from cart completely (requires authentication)
+  // API: DELETE /cart/product/{product_id}
+  // Parameter: product_id (required, path parameter)
+  // Response: string on success (200) or validation error (422)
   removeFromCart: async (productId: string): Promise<RemoveCartItemResponse> => {
-    const params = new URLSearchParams({
-      product_id: productId,
-    });
-    // API endpoint shows /cart/{product_id} but product_id is passed as query parameter
-    // Response is a string (200) or validation error (422)
-    const response = await api.delete<string | RemoveCartItemResponse>(`/cart/?${params.toString()}`);
-    // Handle both string and object responses
+    // API endpoint: DELETE /cart/product/{product_id}
+    // product_id is passed as path parameter
+    const response = await api.delete<string | RemoveCartItemResponse>(`/cart/product/${productId}`);
+    // Handle string response (API returns plain string on success)
     if (typeof response === 'string') {
       return { message: response };
     }
     return response;
   },
   // Clear entire cart (requires authentication)
+  // API: DELETE /cart/delete_all_products (no parameters)
+  // Response: string on success (200)
   clearCart: async (): Promise<{ message: string }> => {
-    return api.delete<{ message: string }>('/cart/clear');
+    const response = await api.delete<string | { message: string }>('/cart/delete_all_products');
+    // Handle string response (API returns plain string on success)
+    if (typeof response === 'string') {
+      return { message: response };
+    }
+    return response;
   },
 };
 

@@ -126,6 +126,59 @@ export default function CartPage() {
     return item.product?._id || item.product?.id || item._id || ''
   }
 
+  const handleIncrementQuantity = async (item: CartProduct) => {
+    const productId = getProductId(item)
+    if (!productId) {
+      showError("Product ID is missing")
+      return
+    }
+
+    setUpdatingItems(prev => new Set(prev).add(productId))
+    try {
+      // Use add-to-cart API to add one more item
+      await cartApi.addToCart(productId, 1)
+      // Refresh cart to get updated quantities
+      await fetchCartProducts()
+      success("Item added to cart!")
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to add item to cart."
+      showError(errorMessage)
+    } finally {
+      setUpdatingItems(prev => {
+        const next = new Set(prev)
+        next.delete(productId)
+        return next
+      })
+    }
+  }
+
+  const handleDecrementQuantity = async (item: CartProduct) => {
+    const productId = getProductId(item)
+    if (!productId) {
+      showError("Product ID is missing")
+      return
+    }
+
+    setUpdatingItems(prev => new Set(prev).add(productId))
+    try {
+      // Use DELETE API with query parameter to decrease quantity by one
+      // This will decrease quantity by 1, or remove item if quantity is 1
+      await cartApi.decreaseCartItem(productId)
+      // Refresh cart to get updated quantities
+      await fetchCartProducts()
+      success("Item quantity decreased!")
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to decrease item quantity."
+      showError(errorMessage)
+    } finally {
+      setUpdatingItems(prev => {
+        const next = new Set(prev)
+        next.delete(productId)
+        return next
+      })
+    }
+  }
+
   const handleUpdateQuantity = async (item: CartProduct, newQuantity: number) => {
     if (newQuantity < 1) {
       handleRemoveItem(item)
@@ -173,12 +226,10 @@ export default function CartPage() {
 
     setUpdatingItems(prev => new Set(prev).add(productId))
     try {
+      // Call API to completely remove the product from cart
       await cartApi.removeFromCart(productId)
-      // Remove from local state
-      setCartItems(prev => prev.filter(cartItem => {
-        const id = getProductId(cartItem)
-        return id !== productId
-      }))
+      // Refresh cart to ensure consistency with server
+      await fetchCartProducts()
       success("Item removed from cart!")
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to remove item from cart."
@@ -198,8 +249,12 @@ export default function CartPage() {
     }
 
     try {
+      // Call API to delete all products from cart
       await cartApi.clearCart()
+      // Clear local state
       setCartItems([])
+      // Refresh cart to ensure consistency with server
+      await fetchCartProducts()
       success("Cart cleared successfully!")
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to clear cart."
@@ -352,8 +407,8 @@ export default function CartPage() {
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
-                                  disabled={isUpdating || item.quantity <= 1}
+                                  onClick={() => handleDecrementQuantity(item)}
+                                  disabled={isUpdating}
                                   className="h-9 w-9"
                                 >
                                   <Minus className="h-4 w-4" />
@@ -372,7 +427,7 @@ export default function CartPage() {
                                 <Button
                                   variant="outline"
                                   size="icon"
-                                  onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
+                                  onClick={() => handleIncrementQuantity(item)}
                                   disabled={isUpdating}
                                   className="h-9 w-9"
                                 >

@@ -16,8 +16,6 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { productApi } from "@/lib/product-api"
 import { cartApi } from "@/lib/cart-api"
 import { useToast } from "@/lib/toast-context"
@@ -48,14 +46,14 @@ export default function ProductDetailPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [imageError, setImageError] = useState(false)
   
-  // Magnifying glass state
+  // Flipkart-style magnifying glass state
   const [isZooming, setIsZooming] = useState(false)
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const imageRef = useRef<HTMLDivElement>(null)
-  const zoomRef = useRef<HTMLDivElement>(null)
+  const zoomPreviewRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -111,7 +109,7 @@ export default function ProductDetailPage() {
     }
   }
 
-  // Magnifying glass handlers
+  // Flipkart-style magnifying glass handlers
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageRef.current || !product || !currentImage) return
 
@@ -119,15 +117,14 @@ export default function ProductDetailPage() {
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
 
-    // Calculate percentage position for background position
+    // Calculate percentage position for zoom preview background position
     const percentX = (x / rect.width) * 100
     const percentY = (y / rect.height) * 100
 
-    // Keep magnifying glass centered on cursor
-    setMousePosition({ 
-      x: Math.max(100, Math.min(rect.width - 100, x)), 
-      y: Math.max(100, Math.min(rect.height - 100, y)) 
-    })
+    // Update mouse position for magnifying glass lens
+    setMousePosition({ x, y })
+    
+    // Update zoom position for preview (inverted for natural zoom effect)
     setZoomPosition({ 
       x: Math.max(0, Math.min(100, percentX)), 
       y: Math.max(0, Math.min(100, percentY)) 
@@ -256,79 +253,88 @@ export default function ProductDetailPage() {
         </motion.div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* Image Gallery with Magnifying Glass */}
+          {/* Image Gallery with Flipkart-style Magnifying Glass */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="space-y-4"
           >
-            {/* Main Image with Magnifying Glass */}
-            <Card className="shadow-2xl border-border overflow-hidden relative group">
-              <div 
-                ref={imageRef}
-                className="relative aspect-square bg-muted overflow-hidden cursor-crosshair"
-                onMouseMove={handleMouseMove}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-              >
-                {currentImage ? (
-                  <>
-                    {/* Main Image */}
-                    <motion.img
-                      key={selectedImageIndex}
-                      src={currentImage}
-                      alt={product.title}
-                      className="w-full h-full object-cover"
-                      initial={{ opacity: 0, scale: 1.1 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.4 }}
-                      onError={() => setImageError(true)}
-                    />
-                    
-                    {/* Magnifying Glass Zoom */}
-                    {isZooming && (
-                      <motion.div
-                        ref={zoomRef}
-                        initial={{ opacity: 0, scale: 0.8 }}
+            {/* Main Image Container with Magnifying Glass */}
+            <div className="relative">
+              <Card className="shadow-2xl border-border overflow-hidden relative group">
+                <div 
+                  ref={imageRef}
+                  className="relative aspect-square bg-muted overflow-hidden cursor-crosshair"
+                  onMouseMove={handleMouseMove}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  {currentImage ? (
+                    <>
+                      {/* Main Image */}
+                      <motion.img
+                        key={selectedImageIndex}
+                        src={currentImage}
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                        initial={{ opacity: 0, scale: 1.1 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        className="absolute pointer-events-none z-10"
-                        style={{
-                          left: `${mousePosition.x}px`,
-                          top: `${mousePosition.y}px`,
-                          width: '200px',
-                          height: '200px',
-                          border: '3px solid white',
-                          borderRadius: '50%',
-                          overflow: 'hidden',
-                          boxShadow: '0 0 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3)',
-                          transform: 'translate(-50%, -50%)',
-                        }}
-                      >
-                        <div
-                          className="w-full h-full"
+                        transition={{ duration: 0.4 }}
+                        onError={() => setImageError(true)}
+                      />
+                      
+                      {/* Magnifying Glass Lens (follows cursor) - Flipkart style */}
+                      {isZooming && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.5 }}
+                          className="absolute pointer-events-none z-30 border-2 border-white rounded-full overflow-hidden shadow-2xl"
                           style={{
-                            backgroundImage: `url(${currentImage})`,
-                            backgroundSize: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * 2.5 : 1000}px ${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * 2.5 : 1000}px`,
-                            backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                            backgroundRepeat: 'no-repeat',
+                            left: `${mousePosition.x}px`,
+                            top: `${mousePosition.y}px`,
+                            width: '200px',
+                            height: '200px',
+                            transform: 'translate(-50%, -50%)',
+                            boxShadow: '0 0 0 3px rgba(255,255,255,0.9), 0 0 40px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,255,255,0.2)',
                           }}
-                        />
-                      </motion.div>
-                    )}
+                        >
+                          <div
+                            className="w-full h-full"
+                            style={{
+                              backgroundImage: `url(${currentImage})`,
+                              backgroundSize: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * 2.5 : 1000}px ${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * 2.5 : 1000}px`,
+                              backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                              backgroundRepeat: 'no-repeat',
+                            }}
+                          />
+                        </motion.div>
+                      )}
 
-                    {/* Zoom Indicator */}
-                    {isZooming && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-full flex items-center gap-2 z-20"
-                      >
-                        <ZoomIn className="h-4 w-4" />
-                        <span>Hover to Zoom</span>
-                      </motion.div>
-                    )}
+                      {/* Large Zoom Preview Area (Flipkart style) - Shows on hover */}
+                      {isZooming && (
+                        <motion.div
+                          ref={zoomPreviewRef}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className="hidden lg:block absolute left-full ml-4 top-0 w-full h-full bg-white border-2 border-gray-200 rounded-lg overflow-hidden shadow-2xl z-40"
+                          style={{
+                            aspectRatio: '1 / 1',
+                          }}
+                        >
+                          <div
+                            className="w-full h-full"
+                            style={{
+                              backgroundImage: `url(${currentImage})`,
+                              backgroundSize: `${imageRef.current?.offsetWidth ? imageRef.current.offsetWidth * 2.5 : 1000}px ${imageRef.current?.offsetHeight ? imageRef.current.offsetHeight * 2.5 : 1000}px`,
+                              backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                              backgroundRepeat: 'no-repeat',
+                            }}
+                          />
+                        </motion.div>
+                      )}
 
                     {/* Navigation Arrows */}
                     {hasMultipleImages && (
@@ -370,6 +376,7 @@ export default function ProductDetailPage() {
                 )}
               </div>
             </Card>
+            </div>
 
             {/* Thumbnail Gallery */}
             {hasMultipleImages && (
@@ -450,47 +457,6 @@ export default function ProductDetailPage() {
                   </p>
                 </CardContent>
               </Card>
-
-              {/* Quantity Selector */}
-              {product.is_active !== false && (
-                <div className="mb-6">
-                  <Label htmlFor="quantity" className="text-sm font-medium mb-2 block">
-                    Quantity
-                  </Label>
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                      disabled={quantity <= 1 || isAddingToCart}
-                      className="h-10 w-10"
-                    >
-                      <span className="text-lg">-</span>
-                    </Button>
-                    <Input
-                      id="quantity"
-                      type="number"
-                      min="1"
-                      value={quantity}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 1
-                        setQuantity(Math.max(1, val))
-                      }}
-                      className="w-20 text-center"
-                      disabled={isAddingToCart}
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setQuantity(prev => prev + 1)}
-                      disabled={isAddingToCart}
-                      className="h-10 w-10"
-                    >
-                      <span className="text-lg">+</span>
-                    </Button>
-                  </div>
-                </div>
-              )}
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
