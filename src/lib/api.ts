@@ -110,6 +110,17 @@ export const api = {
       throw handleApiError(error);
     }
   },
+  // Download file as blob
+  downloadFile: async (endpoint: string): Promise<Blob> => {
+    try {
+      const response = await apiClient.get(endpoint, {
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
 };
 
 function handleApiError(error: unknown): Error {

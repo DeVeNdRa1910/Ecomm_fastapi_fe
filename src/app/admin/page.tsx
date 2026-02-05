@@ -2,24 +2,40 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, Users, DollarSign, TrendingUp } from "lucide-react"
+import { Package, Users, TrendingUp, IndianRupee } from "lucide-react"
 import { productApi } from "@/lib/product-api"
+import { orderApi } from "@/lib/order-api"
+import { useSellerStatsStore } from "@/store/useSellerStatsStore"
 
 export default function AdminDashboard() {
   const [productCount, setProductCount] = useState(0)
+  const { totalCustomers, totalRevenue, setCustomers } = useSellerStatsStore()
 
   useEffect(() => {
-    const fetchProductCount = async () => {
+    const fetchData = async () => {
       try {
-        const response = await productApi.getProducts()
-        setProductCount(response.seller_products?.length || 0)
+        // Fetch product count
+        const productResponse = await productApi.getProducts()
+        setProductCount(productResponse.seller_products?.length || 0)
+
+        // Fetch seller users to calculate customers and revenue
+        const usersResponse = await orderApi.getSellerUsers()
+        setCustomers(usersResponse || [])
       } catch (error) {
-        // Silently fail - product count is not critical for dashboard
-        console.error("Failed to fetch product count:", error)
+        // Silently fail - stats are not critical for dashboard
+        console.error("Failed to fetch dashboard data:", error)
       }
     }
-    fetchProductCount()
-  }, [])
+    fetchData()
+  }, [setCustomers])
+
+  const formatRevenue = (amount: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
 
   const stats = [
     {
@@ -30,17 +46,17 @@ export default function AdminDashboard() {
       color: "text-blue-500",
     },
     {
-      title: "Total Users",
-      value: "0",
-      description: "Registered users",
+      title: "Total Customers",
+      value: totalCustomers.toString(),
+      description: "Customers who purchased",
       icon: Users,
       color: "text-blue-500",
     },
     {
       title: "Revenue",
-      value: "$0",
+      value: formatRevenue(totalRevenue),
       description: "Total revenue",
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "text-blue-500",
     },
     {
@@ -115,6 +131,7 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
 
 
 

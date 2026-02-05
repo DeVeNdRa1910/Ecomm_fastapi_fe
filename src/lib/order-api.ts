@@ -44,6 +44,18 @@ export interface Order {
 
 export type GetOrdersResponse = Order[]
 
+export interface SellerUser {
+  first_name: string
+  last_name: string
+  profile_image?: string
+  product_name: string
+  product_price: number
+  product_images: string[]
+  last_ordered_time: string
+}
+
+export type GetSellerUsersResponse = SellerUser[]
+
 export const orderApi = {
   // API: POST /order/create-order
   createOrder: async (data: CreateOrderRequest): Promise<CreateOrderResponseObject> => {
@@ -54,6 +66,14 @@ export const orderApi = {
   // API: GET /order/get-orders
   getOrders: async (): Promise<GetOrdersResponse> => {
     return api.get<GetOrdersResponse>("/order/get-orders")
+  },
+  // API: GET /order/get-user (for sellers to get users who bought their products)
+  getSellerUsers: async (): Promise<GetSellerUsersResponse> => {
+    return api.get<GetSellerUsersResponse>("/order/get-user")
+  },
+  // API: GET /order/seller/users/export (export users data as CSV)
+  exportSellerUsers: async (): Promise<Blob> => {
+    return api.downloadFile("/order/seller/users/export")
   },
 }
 
