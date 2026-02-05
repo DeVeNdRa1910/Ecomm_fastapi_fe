@@ -120,15 +120,17 @@ export default function VerifyOTPPage() {
         otp: otpValue,
       })
 
-      // Clear email from session storage after successful verification
+      // Clear email and role from session storage after successful verification
+      // Note: Role is cleared but user still needs to login, so redirect to signin
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem('verification_email')
+        sessionStorage.removeItem('verification_role')
       }
 
       // Show success toast
       success(response.message || "Email verified successfully!")
 
-      // Redirect to login page after a short delay
+      // Redirect to login page - role-based redirect happens after login
       setTimeout(() => {
         router.push("/signin")
       }, 1000)

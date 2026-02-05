@@ -1,0 +1,187 @@
+/* Admin Panel Theme - Blue instead of Orange */
+
+:root {
+  /* Light theme - White and Blue */
+  --admin-background: #ffffff;
+  --admin-foreground: #171717;
+  --admin-card: #ffffff;
+  --admin-card-foreground: #171717;
+  --admin-popover: #ffffff;
+  --admin-popover-foreground: #171717;
+  --admin-primary: #3b82f6;
+  --admin-primary-foreground: #ffffff;
+  --admin-secondary: #eff6ff;
+  --admin-secondary-foreground: #171717;
+  --admin-muted: #f1f5f9;
+  --admin-muted-foreground: #64748b;
+  --admin-accent: #dbeafe;
+  --admin-accent-foreground: #171717;
+  --admin-destructive: #ef4444;
+  --admin-destructive-foreground: #ffffff;
+  --admin-border: #e2e8f0;
+  --admin-input: #e2e8f0;
+  --admin-ring: #3b82f6;
+}
+
+.dark {
+  /* Dark theme - Black and Blue with shadow */
+  --admin-background: #000000;
+  --admin-foreground: #ededed;
+  --admin-card: #0a0a0a;
+  --admin-card-foreground: #ededed;
+  --admin-popover: #0a0a0a;
+  --admin-popover-foreground: #ededed;
+  --admin-primary: #3b82f6;
+  --admin-primary-foreground: #ffffff;
+  --admin-secondary: #0f172a;
+  --admin-secondary-foreground: #ededed;
+  --admin-muted: #1e293b;
+  --admin-muted-foreground: #a3a3a3;
+  --admin-accent: #1e3a8a;
+  --admin-accent-foreground: #ededed;
+  --admin-destructive: #ef4444;
+  --admin-destructive-foreground: #ffffff;
+  --admin-border: #1e293b;
+  --admin-input: #1e293b;
+  --admin-ring: #3b82f6;
+}
+
+/* Apply admin theme to admin routes */
+html[data-admin="true"],
+html[data-admin="true"] body {
+  --background: var(--admin-background);
+  --foreground: var(--admin-foreground);
+  --card: var(--admin-card);
+  --card-foreground: var(--admin-card-foreground);
+  --popover: var(--admin-popover);
+  --popover-foreground: var(--admin-popover-foreground);
+  --primary: var(--admin-primary);
+  --primary-foreground: var(--admin-primary-foreground);
+  --secondary: var(--admin-secondary);
+  --secondary-foreground: var(--admin-secondary-foreground);
+  --muted: var(--admin-muted);
+  --muted-foreground: var(--admin-muted-foreground);
+  --accent: var(--admin-accent);
+  --accent-foreground: var(--admin-accent-foreground);
+  --destructive: var(--admin-destructive);
+  --destructive-foreground: var(--admin-destructive-foreground);
+  --border: var(--admin-border);
+  --input: var(--admin-input);
+  --ring: var(--admin-ring);
+}
+
+html[data-admin="true"] body {
+  background:
+    radial-gradient(
+      1000px 600px at 50% -150px,
+      rgba(59, 130, 246, 0.18),
+      rgba(59, 130, 246, 0) 60%
+    ),
+    var(--background);
+  color: var(--foreground);
+}
+
+html[data-admin="true"].dark body {
+  background:
+    radial-gradient(
+      1000px 600px at 50% -150px,
+      rgba(59, 130, 246, 0.22),
+      rgba(59, 130, 246, 0) 60%
+    ),
+    var(--background);
+  box-shadow: 0 0 100px rgba(59, 130, 246, 0.1);
+}
+
+/* Custom scrollbar for admin panel */
+html[data-admin="true"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-admin="true"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html[data-admin="true"] ::-webkit-scrollbar-thumb {
+  background: var(--admin-primary);
+  border-radius: 4px;
+}
+
+html[data-admin="true"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-primary);
+  opacity: 0.8;
+}
+
+html[data-admin="true"] * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-primary) transparent;
+}
+
+/* Ensure Select dropdown Viewport is scrollable with visible scrollbar */
+html[data-admin="true"] [role="listbox"] {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--admin-primary) var(--admin-muted) !important;
+}
+
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
+}
+
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-track {
+  background: var(--admin-muted) !important;
+  border-radius: 4px !important;
+}
+
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-thumb {
+  background: var(--admin-primary) !important;
+  border-radius: 4px !important;
+  min-height: 20px !important;
+}
+
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-primary) !important;
+  opacity: 0.9 !important;
+}
+
+/* Target Radix Select Viewport directly - ensure scrolling works */
+html[data-admin="true"] [data-radix-select-viewport],
+html[data-admin="true"] [role="listbox"] {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--admin-primary) var(--admin-muted) !important;
+}
+
+html[data-admin="true"] [data-radix-select-viewport]::-webkit-scrollbar,
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar {
+  width: 8px !important;
+  display: block !important;
+  -webkit-appearance: none !important;
+}
+
+html[data-admin="true"] [data-radix-select-viewport]::-webkit-scrollbar-track,
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-track {
+  background: var(--admin-muted) !important;
+  border-radius: 4px !important;
+}
+
+html[data-admin="true"] [data-radix-select-viewport]::-webkit-scrollbar-thumb,
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-thumb {
+  background: var(--admin-primary) !important;
+  border-radius: 4px !important;
+  min-height: 20px !important;
+}
+
+html[data-admin="true"] [data-radix-select-viewport]::-webkit-scrollbar-thumb:hover,
+html[data-admin="true"] [role="listbox"]::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-primary) !important;
+  opacity: 0.9 !important;
+}
+
+
+

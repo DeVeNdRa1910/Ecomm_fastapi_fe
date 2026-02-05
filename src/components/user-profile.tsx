@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { User, LogOut, Settings, Moon, Sun } from "lucide-react"
+import { User, LogOut, Settings, Moon, Sun, ShoppingBag } from "lucide-react"
 import { tokenManager } from "@/lib/cookies"
 import { authApi, type UserInfo } from "@/lib/auth-api"
 import { useToast } from "@/lib/toast-context"
@@ -195,6 +195,17 @@ export function UserProfile() {
             >
               <Settings className="h-4 w-4" />
               My Account
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2"
+              onClick={() => {
+                setIsOpen(false)
+                router.push("/orders")
+              }}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              My Orders
             </Button>
             {mounted && (
               <Button

@@ -13,12 +13,14 @@ import {
 } from "@/components/ui/navigation-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserProfile } from "@/components/user-profile"
+import { FastkartLogo } from "@/components/fastkart-logo"
 import { tokenManager } from "@/lib/cookies"
 import { useAuthStore } from "@/store/useAuthStore"
+import { ShoppingCart } from "lucide-react"
 
 export function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const { user, isAuthenticated: isAuthFromStore } = useAuthStore()
+  const { user } = useAuthStore()
 
   useEffect(() => {
     // Check if user is authenticated
@@ -53,15 +55,20 @@ export function Header() {
         <div className="relative flex items-center justify-between h-full w-full">
           {/* Left: Logo */}
           <div className="flex items-center shrink-0">
-            <Link href="/" className="text-xl font-bold text-primary shadow-md hover:shadow-lg transition-shadow">
-              fastapi_comm
-            </Link>
+            <FastkartLogo size="md" className="shadow-md hover:shadow-lg transition-shadow" />
           </div>
 
           {/* Center: Navigation Menu - Perfectly centered */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <NavigationMenu>
               <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <Link href="/" className="shadow-sm hover:shadow-md transition-shadow">
+                      Home
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="shadow-md hover:shadow-lg transition-shadow">
                     Products
@@ -102,28 +109,11 @@ export function Header() {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="shadow-md hover:shadow-lg transition-shadow">
-                    Categories
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent className="shadow-lg">
-                    <ul className="grid gap-3 p-4 w-[200px]">
-                      <li>
-                        <NavigationMenuLink asChild>
-                          <Link
-                            href="/categories"
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">
-                              All Categories
-                            </div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              Explore all product categories
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      </li>
-                    </ul>
-                  </NavigationMenuContent>
+                  <NavigationMenuLink asChild>
+                    <Link href="/categories" className="shadow-sm hover:shadow-md transition-shadow">
+                      Categories
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
@@ -143,8 +133,21 @@ export function Header() {
             </NavigationMenu>
           </div>
 
-          {/* Right: User Profile or Sign In/Sign Up, and Theme Toggle */}
+          {/* Right: User Profile or Sign In/Sign Up, Cart, and Theme Toggle */}
           <div className="flex items-center justify-end gap-2 shrink-0">
+            {/* Cart Icon - Show for authenticated users */}
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="relative shadow-md hover:shadow-lg transition-shadow"
+              >
+                <Link href="/cart">
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              </Button>
+            )}
             {isAuthenticated ? (
               <UserProfile />
             ) : (

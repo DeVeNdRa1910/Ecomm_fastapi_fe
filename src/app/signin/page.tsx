@@ -76,8 +76,9 @@ export default function SignInPage() {
       }
 
       // Fetch and store user info
+      let userInfo = null
       try {
-        const userInfo = await authApi.getMe()
+        userInfo = await authApi.getMe()
         setUser(userInfo)
       } catch (error) {
         // If fetching user info fails, still proceed with login
@@ -94,9 +95,10 @@ export default function SignInPage() {
         }
       }, 100)
 
-      // Redirect to home page after a short delay
+      // Redirect based on role
+      const redirectPath = userInfo?.role === 'seller' ? '/admin' : '/'
       setTimeout(() => {
-        router.push("/")
+        router.push(redirectPath)
       }, 1000)
     } catch (error) {
       // Handle error - show error message from API or generic message

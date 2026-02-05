@@ -10,6 +10,14 @@ const apiClient = axios.create({
   },
 });
 
+// Public API client without authentication
+const publicApiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 // Add token to requests if available
 apiClient.interceptors.request.use(
   (config) => {
@@ -33,6 +41,23 @@ export const api = {
     try {
     const response = await apiClient.get<T>(endpoint);
     return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  // Public API methods (no authentication required)
+  publicGet: async <T>(endpoint: string): Promise<T> => {
+    try {
+      const response = await publicApiClient.get<T>(endpoint);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  },
+  publicPost: async <T>(endpoint: string, data: unknown, config?: { headers?: Record<string, string> }): Promise<T> => {
+    try {
+      const response = await publicApiClient.post<T>(endpoint, data, config);
+      return response.data;
     } catch (error) {
       throw handleApiError(error);
     }
