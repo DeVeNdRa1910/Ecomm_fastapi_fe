@@ -124,6 +124,13 @@ export function Header() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
+                    <Link href="/features" className="shadow-sm hover:shadow-md transition-shadow">
+                      Features
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
                     <Link href="/contact" className="shadow-sm hover:shadow-md transition-shadow">
                       Contact
                     </Link>
