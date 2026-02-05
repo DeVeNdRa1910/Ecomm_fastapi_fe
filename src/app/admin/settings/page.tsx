@@ -9,7 +9,8 @@ import { useThemeColorStore } from "@/store/useThemeColorStore"
 import { useToast } from "@/lib/toast-context"
 import { useTheme } from "next-themes"
 
-const DEFAULT_LIGHT_COLOR = "#22c55e" // Green
+const DEFAULT_ADMIN_COLOR = "#3b82f6" // Blue (default for admin)
+const DEFAULT_LIGHT_COLOR = "#22c55e" // Green (for regular users)
 const DEFAULT_DARK_COLOR = "#ff6600" // Orange
 
 export default function AdminSettings() {
@@ -39,10 +40,9 @@ export default function AdminSettings() {
   }
 
   const handleReset = () => {
-    const isDark = theme === "dark"
-    const defaultColor = isDark ? DEFAULT_DARK_COLOR : DEFAULT_LIGHT_COLOR
-    setCurrentColor(defaultColor)
-    setPrimaryColor(defaultColor)
+    // Admin panel always resets to blue
+    setCurrentColor(DEFAULT_ADMIN_COLOR)
+    setPrimaryColor(DEFAULT_ADMIN_COLOR)
     success("Theme color reset to default!")
   }
 

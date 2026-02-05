@@ -38,8 +38,16 @@ export default function AdminLayout({
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-admin', 'true')
       // Apply theme color after setting admin attribute
-      const { primaryColor } = useThemeColorStore.getState()
-      applyThemeColor(primaryColor)
+      const store = useThemeColorStore.getState()
+      // Check if user has a custom color stored, otherwise use blue default for admin
+      const storedColor = localStorage.getItem('ecomm-theme-color-storage')
+      if (!storedColor || storedColor.includes('"primaryColor":"#22c55e"')) {
+        // No custom color stored or still using default green - set to blue for admin
+        store.setPrimaryColor("#3b82f6") // Blue default for admin
+      } else {
+        // User has a custom color - apply it
+        applyThemeColor(store.primaryColor)
+      }
     }
 
     const checkAuth = async () => {

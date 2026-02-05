@@ -6,12 +6,13 @@ interface ThemeColorState {
   setPrimaryColor: (color: string) => void
 }
 
-const DEFAULT_LIGHT_COLOR = "#22c55e" // Green
+const DEFAULT_LIGHT_COLOR = "#22c55e" // Green (for regular users)
+const DEFAULT_ADMIN_COLOR = "#3b82f6" // Blue (for admin panel)
 
 export const useThemeColorStore = create<ThemeColorState>()(
   persist(
     (set) => ({
-      primaryColor: DEFAULT_LIGHT_COLOR,
+      primaryColor: DEFAULT_LIGHT_COLOR, // Will be overridden by admin layout if needed
       setPrimaryColor: (color: string) => {
         set({ primaryColor: color })
         // Apply color immediately
