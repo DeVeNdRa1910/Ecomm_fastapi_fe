@@ -18,6 +18,13 @@ import {
   Package
 } from "lucide-react"
 import { cartApi, type CartProduct } from "@/lib/cart-api"
+import { paymentApi } from "@/lib/payment-api"
+import { orderApi } from "@/lib/order-api"
+import { authApi } from "@/lib/auth-api"
+import { useAuthStore } from "@/store/useAuthStore"
+import { CompleteProfileModal } from "@/components/complete-profile-modal"
+import { getMissingOrderProfileFields, type ProfileMissingField } from "@/lib/profile"
+import { getUserId } from "@/lib/user-id"
 import { useToast } from "@/lib/toast-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -78,7 +85,11 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartProduct[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set())
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [missingProfileFields, setMissingProfileFields] = useState<ProfileMissingField[]>([])
   const { success, error: showError } = useToast()
+  const { user, setUser } = useAuthStore()
 
   // Fetch cart products on mount
   const fetchCartProducts = async () => {
@@ -99,7 +110,13 @@ export default function CartPage() {
       const errorMessage = err instanceof Error ? err.message : "Failed to load cart items."
       showError(errorMessage)
       // If unauthorized, redirect to sign in
-      if (err instanceof Error && (err as any).status === 401) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "status" in err &&
+        typeof (err as { status?: unknown }).status === "number" &&
+        (err as { status: number }).status === 401
+      ) {
         setTimeout(() => {
           router.push("/signin")
         }, 2000)
@@ -123,7 +140,7 @@ export default function CartPage() {
 
   const getProductId = (item: CartProduct): string => {
     // Product ID is in product._id based on the API response structure
-    return item.product?._id || item.product?.id || item._id || ''
+    return item.product?._id || item._id || ''
   }
 
   const handleIncrementQuantity = async (item: CartProduct) => {
@@ -262,6 +279,98 @@ export default function CartPage() {
     }
   }
 
+  const handleCheckout = async () => {
+    const token = tokenManager.getToken()
+    if (!token) {
+      showError("Please sign in to proceed to checkout")
+      setTimeout(() => {
+        router.push("/signin")
+      }, 2000)
+      return
+    }
+
+    if (cartItems.length === 0) {
+      showError("Your cart is empty")
+      return
+    }
+
+    setIsProcessingCheckout(true)
+    try {
+      // Ensure user is loaded (AuthInitializer may still be fetching)
+      const currentUser = user ?? (await authApi.getMe())
+      if (!user) setUser(currentUser)
+
+      // Block checkout if profile is incomplete
+      const missing = getMissingOrderProfileFields(currentUser)
+      if (missing.length > 0) {
+        setMissingProfileFields(missing)
+        setIsProfileModalOpen(true)
+        return
+      }
+
+      const userId = getUserId(currentUser)
+      if (!userId) {
+        showError("Unable to create order: missing user id. Please sign in again.")
+        return
+      }
+      const address = (currentUser.address || "").trim()
+
+      // Build arrays from cart items
+      const productIds = cartItems.map((i) => i.product?._id).filter(Boolean) as string[]
+      const sellerIds = cartItems.map((i) => i.product?.seller_id).filter(Boolean) as string[]
+
+      if (productIds.length === 0 || sellerIds.length === 0) {
+        showError("Unable to create order: missing product information.")
+        return
+      }
+
+      const categories = Array.from(
+        new Set(cartItems.map((i) => i.product?.category).filter(Boolean) as string[])
+      )
+      const category = categories.length === 1 ? categories[0] : "mixed"
+
+      const totalQty = cartItems.reduce((sum, i) => sum + (i.quantity || 0), 0)
+      const totalAmount = cartItems.reduce((sum, i) => {
+        const price = i.product?.price || 0
+        return sum + price * (i.quantity || 0)
+      }, 0)
+
+      // Create order (ordered_from = cart)
+      await orderApi.createOrder({
+        product_id: productIds,
+        seller_id: sellerIds,
+        ordered_from: "cart",
+        user_id: userId,
+        address,
+        category,
+        quantity: totalQty,
+        unit_price: totalAmount,
+      })
+
+      // Transform cart items to checkout format
+      const products = cartItems.map((item) => ({
+        name: item.product?.title || "Product",
+        price: item.product?.price || 0,
+        quantity: item.quantity,
+      }))
+
+      // Create checkout session
+      const response = await paymentApi.createCheckoutSession(products)
+      
+      // Redirect to the checkout URL
+      if (response.url) {
+        window.location.href = response.url
+      } else {
+        showError("Failed to create checkout session. Please try again.")
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to create checkout session. Please try again."
+      showError(errorMessage)
+    } finally {
+      setIsProcessingCheckout(false)
+    }
+  }
+
   // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => {
     return sum + (item.product?.price || 0) * item.quantity
@@ -287,6 +396,12 @@ export default function CartPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+      <CompleteProfileModal
+        open={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        missingFields={missingProfileFields}
+        onGoToMyAccount={() => router.push("/my-account")}
+      />
       <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="mb-8">
@@ -325,7 +440,7 @@ export default function CartPage() {
             <Package className="h-24 w-24 text-muted-foreground mx-auto mb-4 opacity-50" />
             <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
             <p className="text-muted-foreground mb-6">
-              Looks like you haven't added anything to your cart yet.
+              Looks like you haven&apos;t added anything to your cart yet.
             </p>
             <Button asChild size="lg">
               <Link href="/products">
@@ -357,7 +472,7 @@ export default function CartPage() {
                           {/* Product Image with Rotation */}
                           <Link 
                             href={`/products/${productId}`}
-                            className="relative w-full sm:w-32 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0 group"
+                            className="relative w-full sm:w-32 h-32 rounded-lg overflow-hidden bg-muted shrink-0 group"
                           >
                             {hasMultipleImages ? (
                               <RotatingProductImage
@@ -514,9 +629,18 @@ export default function CartPage() {
 
                     <Button 
                       size="lg" 
-                      className="w-full mb-4 bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500 hover:from-violet-600 hover:via-indigo-600 hover:to-blue-600 text-white"
+                      className="w-full mb-4 bg-linear-to-r from-violet-500 via-indigo-500 to-blue-500 hover:from-violet-600 hover:via-indigo-600 hover:to-blue-600 text-white"
+                      onClick={handleCheckout}
+                      disabled={isProcessingCheckout || cartItems.length === 0}
                     >
-                      Proceed to Checkout
+                      {isProcessingCheckout ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        "Proceed to Checkout"
+                      )}
                     </Button>
 
                     <Button 

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "fastapi_comm - E-commerce Platform",
+  title: "Fastkart - E-commerce Platform",
   description: "Your trusted e-commerce platform for quality products",
 };
 

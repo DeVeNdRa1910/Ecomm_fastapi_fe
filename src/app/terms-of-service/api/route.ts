@@ -17,26 +17,26 @@ export interface TermsOfServiceData {
 const termsOfServiceData: TermsOfServiceData = {
   title: "Terms of Service",
   lastUpdated: "February 2, 2025",
-  introduction: "Welcome to fastapi_comm. These Terms of Service ('Terms') govern your access to and use of our website, mobile application, and services (collectively, the 'Service') operated by fastapi_comm ('us', 'we', or 'our'). Please read these Terms carefully before using our Service. By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part of these Terms, then you may not access the Service.",
+  introduction: "Welcome to Fastkart. These Terms of Service ('Terms') govern your access to and use of our website, mobile application, and services (collectively, the 'Service') operated by Fastkart ('us', 'we', or 'our'). Please read these Terms carefully before using our Service. By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part of these Terms, then you may not access the Service.",
   sections: [
     {
       title: "1. Acceptance of Terms",
       content: [
-        "By accessing and using fastapi_comm, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.",
-        "These Terms constitute a legally binding agreement between you and fastapi_comm. Your use of the Service is also governed by our Privacy Policy, which is incorporated into these Terms by reference.",
+        "By accessing and using Fastkart, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.",
+        "These Terms constitute a legally binding agreement between you and Fastkart. Your use of the Service is also governed by our Privacy Policy, which is incorporated into these Terms by reference.",
         "We reserve the right to update, change, or replace any part of these Terms by posting updates and/or changes to our website. It is your responsibility to check this page periodically for changes. Your continued use of or access to the website following the posting of any changes constitutes acceptance of those changes."
       ]
     },
     {
       title: "2. Use License",
       content: [
-        "Permission is granted to temporarily access the materials on fastapi_comm's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:",
+        "Permission is granted to temporarily access the materials on Fastkart's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:",
         "• Modify or copy the materials;",
         "• Use the materials for any commercial purpose or for any public display (commercial or non-commercial);",
         "• Attempt to reverse engineer any software contained on the website;",
         "• Remove any copyright or other proprietary notations from the materials; or",
         "• Transfer the materials to another person or 'mirror' the materials on any other server.",
-        "This license shall automatically terminate if you violate any of these restrictions and may be terminated by fastapi_comm at any time. Upon terminating your viewing of these materials or upon the termination of this license, you must destroy any downloaded materials in your possession whether in electronic or printed format."
+        "This license shall automatically terminate if you violate any of these restrictions and may be terminated by Fastkart at any time. Upon terminating your viewing of these materials or upon the termination of this license, you must destroy any downloaded materials in your possession whether in electronic or printed format."
       ]
     },
     {
@@ -105,8 +105,8 @@ const termsOfServiceData: TermsOfServiceData = {
     {
       title: "9. Intellectual Property",
       content: [
-        "The Service and its original content, features, and functionality are and will remain the exclusive property of fastapi_comm and its licensors. The Service is protected by copyright, trademark, and other laws. Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent.",
-        "All content included on the site, such as text, graphics, logos, images, audio clips, digital downloads, data compilations, and software, is the property of fastapi_comm or its content suppliers and is protected by international copyright laws.",
+        "The Service and its original content, features, and functionality are and will remain the exclusive property of Fastkart and its licensors. The Service is protected by copyright, trademark, and other laws. Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent.",
+        "All content included on the site, such as text, graphics, logos, images, audio clips, digital downloads, data compilations, and software, is the property of Fastkart or its content suppliers and is protected by international copyright laws.",
         "You may not reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, republish, download, store, or transmit any of the material on our website, except as follows:",
         "• Your computer may temporarily store copies of such materials in RAM incidental to your accessing and viewing those materials;",
         "• You may store files that are automatically cached by your web browser for display enhancement purposes;",
@@ -125,7 +125,7 @@ const termsOfServiceData: TermsOfServiceData = {
     {
       title: "11. Disclaimer of Warranties",
       content: [
-        "THE SERVICE IS PROVIDED ON AN 'AS IS' AND 'AS AVAILABLE' BASIS. FASTAPI_COMM AND ITS SUPPLIERS AND LICENSORS HEREBY DISCLAIM ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT, AND FITNESS FOR PARTICULAR PURPOSE.",
+        "THE SERVICE IS PROVIDED ON AN 'AS IS' AND 'AS AVAILABLE' BASIS. FASTKART AND ITS SUPPLIERS AND LICENSORS HEREBY DISCLAIM ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT, AND FITNESS FOR PARTICULAR PURPOSE.",
         "We do not warrant that the Service will be available at any particular time or location, that any defects or errors will be corrected, or that the Service is free of viruses or other harmful components.",
         "We do not warrant, endorse, guarantee, or assume responsibility for any product or service advertised or offered by a third party through the Service or any hyperlinked website or service, and we will not be a party to or in any way monitor any transaction between you and third-party providers of products or services."
       ]
@@ -133,7 +133,7 @@ const termsOfServiceData: TermsOfServiceData = {
     {
       title: "12. Limitation of Liability",
       content: [
-        "IN NO EVENT SHALL FASTAPI_COMM, NOR ITS DIRECTORS, EMPLOYEES, PARTNERS, AGENTS, SUPPLIERS, OR AFFILIATES, BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE SERVICE.",
+        "IN NO EVENT SHALL FASTKART, NOR ITS DIRECTORS, EMPLOYEES, PARTNERS, AGENTS, SUPPLIERS, OR AFFILIATES, BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF PROFITS, DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES, RESULTING FROM YOUR USE OF THE SERVICE.",
         "TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, OUR TOTAL LIABILITY TO YOU FOR ALL DAMAGES SHALL NOT EXCEED THE AMOUNT YOU PAID TO US IN THE TWELVE (12) MONTHS PRIOR TO THE ACTION GIVING RISE TO THE LIABILITY, OR ONE HUNDRED DOLLARS ($100), WHICHEVER IS GREATER.",
         "Some jurisdictions do not allow the exclusion of certain warranties or the exclusion or limitation of liability for consequential or incidental damages, so the limitations above may not apply to you."
       ]
@@ -141,7 +141,7 @@ const termsOfServiceData: TermsOfServiceData = {
     {
       title: "13. Indemnification",
       content: [
-        "You agree to defend, indemnify, and hold harmless fastapi_comm and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of:",
+        "You agree to defend, indemnify, and hold harmless Fastkart and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees), resulting from or arising out of:",
         "• Your use and access of the Service, by you or any person using your account and password;",
         "• Your violation of any term of these Terms;",
         "• Your violation of any third party right, including without limitation any copyright, property, or privacy right; or",
@@ -160,7 +160,7 @@ const termsOfServiceData: TermsOfServiceData = {
     {
       title: "15. Governing Law and Dispute Resolution",
       content: [
-        "These Terms shall be interpreted and governed by the laws of the jurisdiction in which fastapi_comm operates, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.",
+        "These Terms shall be interpreted and governed by the laws of the jurisdiction in which Fastkart operates, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.",
         "If any provision of these Terms is held to be invalid or unenforceable by a court, the remaining provisions of these Terms will remain in effect. These Terms constitute the entire agreement between us regarding our Service, and supersede and replace any prior agreements we might have between us regarding the Service.",
         "Any disputes arising out of or relating to these Terms or the Service shall be resolved through binding arbitration in accordance with the rules of the arbitration association in our jurisdiction, except where prohibited by law. You agree to waive any right to a jury trial and to participate in class action lawsuits."
       ]
@@ -180,7 +180,7 @@ const termsOfServiceData: TermsOfServiceData = {
     }
   ],
   contact: {
-    email: "legal@fastapi_comm.com",
+    email: "legal@Fastkart.com",
     description: "If you have any questions about these Terms of Service, please contact us at"
   }
 }

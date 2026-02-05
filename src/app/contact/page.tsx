@@ -28,31 +28,31 @@ const socialLinks = [
   {
     name: "Facebook",
     icon: Facebook,
-    url: "https://facebook.com/fastapi_comm",
+    url: "https://facebook.com/Fastkart",
     color: "from-blue-600 to-blue-700"
   },
   {
     name: "Twitter",
     icon: Twitter,
-    url: "https://twitter.com/fastapi_comm",
+    url: "https://twitter.com/Fastkart",
     color: "from-sky-500 to-sky-600"
   },
   {
     name: "Instagram",
     icon: Instagram,
-    url: "https://instagram.com/fastapi_comm",
+    url: "https://instagram.com/Fastkart",
     color: "from-pink-500 via-purple-500 to-orange-500"
   },
   {
     name: "LinkedIn",
     icon: Linkedin,
-    url: "https://linkedin.com/company/fastapi_comm",
+    url: "https://linkedin.com/company/Fastkart",
     color: "from-blue-700 to-blue-800"
   },
   {
     name: "YouTube",
     icon: Youtube,
-    url: "https://youtube.com/@fastapi_comm",
+    url: "https://youtube.com/@Fastkart",
     color: "from-red-600 to-red-700"
   }
 ]
@@ -61,8 +61,8 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email",
-    content: "support@fastapi_comm.com",
-    link: "mailto:support@fastapi_comm.com",
+    content: "support@Fastkart.com",
+    link: "mailto:support@Fastkart.com",
     color: "from-violet-500 to-purple-600"
   },
   {

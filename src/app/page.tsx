@@ -72,7 +72,7 @@ export default function Home() {
               className="text-center space-y-6 mb-16"
             >
               <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500 bg-clip-text text-transparent">
-                Welcome to fastapi_comm
+                Welcome to Fastkart
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Your trusted e-commerce platform for quality products and exceptional service.

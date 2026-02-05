@@ -18,6 +18,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { productApi } from "@/lib/product-api"
 import { cartApi } from "@/lib/cart-api"
+import { paymentApi } from "@/lib/payment-api"
+import { orderApi } from "@/lib/order-api"
+import { authApi } from "@/lib/auth-api"
+import { useAuthStore } from "@/store/useAuthStore"
+import { CompleteProfileModal } from "@/components/complete-profile-modal"
+import { getMissingOrderProfileFields, type ProfileMissingField } from "@/lib/profile"
+import { getUserId } from "@/lib/user-id"
 import { useToast } from "@/lib/toast-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -30,6 +37,7 @@ interface ProductDetail {
   description: string
   price: number
   category: string
+  seller_id?: string
   quantity?: number
   product_image_urls: string[]
   is_active?: boolean
@@ -40,17 +48,21 @@ export default function ProductDetailPage() {
   const params = useParams()
   const productId = params.id as string
   const { success, error: showError } = useToast()
+  const { user, setUser } = useAuthStore()
   
   const [product, setProduct] = useState<ProductDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [imageError, setImageError] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const [missingProfileFields, setMissingProfileFields] = useState<ProfileMissingField[]>([])
   
   // Flipkart-style magnifying glass state
   const [isZooming, setIsZooming] = useState(false)
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [isProcessingBuyNow, setIsProcessingBuyNow] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const imageRef = useRef<HTMLDivElement>(null)
   const zoomPreviewRef = useRef<HTMLDivElement>(null)
@@ -169,10 +181,99 @@ export default function ProductDetailPage() {
     }
   }
 
+  const handleBuyNow = async () => {
+    const token = tokenManager.getToken()
+    if (!token) {
+      showError("Please sign in to buy products")
+      setTimeout(() => {
+        router.push("/signin")
+      }, 2000)
+      return
+    }
+
+    if (!product) return
+
+    if (product.is_active === false) {
+      showError("This product is currently out of stock")
+      return
+    }
+
+    setIsProcessingBuyNow(true)
+    try {
+      // Ensure user is loaded (AuthInitializer may still be fetching)
+      const currentUser = user ?? (await authApi.getMe())
+      if (!user) setUser(currentUser)
+
+      // Block buy-now if profile is incomplete
+      const missing = getMissingOrderProfileFields(currentUser)
+      if (missing.length > 0) {
+        setMissingProfileFields(missing)
+        setIsProfileModalOpen(true)
+        return
+      }
+
+      const currentProductId = product.id || product._id || productId
+      const sellerId = product.seller_id
+      if (!currentProductId || !sellerId) {
+        showError("Unable to create order: missing product information.")
+        return
+      }
+
+      const userId = getUserId(currentUser)
+      if (!userId) {
+        showError("Unable to create order: missing user id. Please sign in again.")
+        return
+      }
+      const address = (currentUser.address || "").trim()
+
+      // Create order (ordered_from = product_page)
+      await orderApi.createOrder({
+        product_id: [currentProductId],
+        seller_id: [sellerId],
+        ordered_from: "product_page",
+        user_id: userId,
+        address,
+        category: product.category || "uncategorized",
+        quantity,
+        unit_price: product.price,
+      })
+
+      // Transform product to checkout format
+      const products = [
+        {
+          name: product.title,
+          price: product.price,
+          quantity: quantity,
+        },
+      ]
+
+      // Create checkout session
+      const response = await paymentApi.createCheckoutSession(products)
+      
+      // Redirect to the checkout URL
+      if (response.url) {
+        window.location.href = response.url
+      } else {
+        showError("Failed to create checkout session. Please try again.")
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to create checkout session. Please try again."
+      showError(errorMessage)
+    } finally {
+      setIsProcessingBuyNow(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col" data-scroll-section>
         <Header />
+        <CompleteProfileModal
+          open={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          missingFields={missingProfileFields}
+          onGoToMyAccount={() => router.push("/my-account")}
+        />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
@@ -188,13 +289,19 @@ export default function ProductDetailPage() {
     return (
       <div className="flex min-h-screen flex-col" data-scroll-section>
         <Header />
+        <CompleteProfileModal
+          open={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          missingFields={missingProfileFields}
+          onGoToMyAccount={() => router.push("/my-account")}
+        />
         <main className="flex-1 flex items-center justify-center">
           <Card className="max-w-md">
             <CardContent className="p-12 text-center">
               <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-xl font-semibold mb-2">Product Not Found</h3>
               <p className="text-muted-foreground mb-6">
-                The product you're looking for doesn't exist.
+                The product you&apos;re looking for doesn&apos;t exist.
               </p>
               <Button 
                 onClick={() => {
@@ -224,8 +331,14 @@ export default function ProductDetailPage() {
   return (
     <div className="flex min-h-screen flex-col" data-scroll-section>
       <Header />
+      <CompleteProfileModal
+        open={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        missingFields={missingProfileFields}
+        onGoToMyAccount={() => router.push("/my-account")}
+      />
       <main className="flex-1" data-scroll-section>
-        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="min-h-screen bg-linear-to-br from-background via-background to-muted/20">
           <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <motion.div
@@ -419,7 +532,7 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500 bg-clip-text text-transparent">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-linear-to-r from-violet-500 via-indigo-500 to-blue-500 bg-clip-text text-transparent">
                 {product.title}
               </h1>
 
@@ -463,7 +576,7 @@ export default function ProductDetailPage() {
                 <Button
                   size="lg"
                   onClick={handleAddToCart}
-                  className="flex-1 shadow-lg bg-gradient-to-r from-violet-500 via-indigo-500 to-blue-500 hover:from-violet-600 hover:via-indigo-600 hover:to-blue-600 text-white"
+                  className="flex-1 shadow-lg bg-linear-to-r from-violet-500 via-indigo-500 to-blue-500 hover:from-violet-600 hover:via-indigo-600 hover:to-blue-600 text-white"
                   disabled={product.is_active === false || isAddingToCart}
                 >
                   {isAddingToCart ? (
@@ -482,9 +595,17 @@ export default function ProductDetailPage() {
                   size="lg"
                   variant="outline"
                   className="flex-1 shadow-lg"
-                  disabled={product.is_active === false || isAddingToCart}
+                  onClick={handleBuyNow}
+                  disabled={product.is_active === false || isAddingToCart || isProcessingBuyNow}
                 >
-                  Buy Now
+                  {isProcessingBuyNow ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Buy Now"
+                  )}
                 </Button>
               </div>
             </div>

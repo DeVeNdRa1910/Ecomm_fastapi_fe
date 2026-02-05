@@ -42,13 +42,13 @@ export interface AboutPageData {
 // Static data - can be replaced with database queries later
 const aboutData: AboutPageData = {
   hero: {
-    title: "About fastapi_comm",
+    title: "About Fastkart",
     subtitle: "Your trusted e-commerce platform for quality products and exceptional service. We're committed to making online shopping simple, secure, and enjoyable."
   },
   story: {
     title: "Our Story",
     paragraphs: [
-      "Founded with a vision to revolutionize online shopping, fastapi_comm has grown from a small startup into a trusted e-commerce platform serving thousands of customers worldwide.",
+      "Founded with a vision to revolutionize online shopping, Fastkart has grown from a small startup into a trusted e-commerce platform serving thousands of customers worldwide.",
       "We believe that shopping online should be effortless, secure, and enjoyable. That's why we've built a platform that combines cutting-edge technology with exceptional customer service.",
       "Our mission is to connect buyers with quality products from trusted sellers, creating a seamless shopping experience that you can rely on."
     ]

@@ -34,10 +34,10 @@ export default function TermsOfServicePage() {
   const termsData = data || {
     title: "Terms of Service",
     lastUpdated: "February 2, 2025",
-    introduction: "Welcome to fastapi_comm. These Terms of Service govern your access to and use of our website and services. By accessing or using our services, you agree to be bound by these terms.",
+    introduction: "Welcome to Fastkart. These Terms of Service govern your access to and use of our website and services. By accessing or using our services, you agree to be bound by these terms.",
     sections: [],
     contact: {
-      email: "legal@fastapi_comm.com",
+      email: "legal@Fastkart.com",
       description: "If you have any questions about these Terms of Service, please contact us at"
     }
   }

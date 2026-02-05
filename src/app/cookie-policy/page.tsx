@@ -34,11 +34,11 @@ export default function CookiePolicyPage() {
   const cookieData = data || {
     title: "Cookie Policy",
     lastUpdated: "February 2, 2025",
-    introduction: "This Cookie Policy explains how fastapi_comm uses cookies and similar technologies.",
+    introduction: "This Cookie Policy explains how Fastkart uses cookies and similar technologies.",
     sections: [],
     cookieTypes: [],
     contact: {
-      email: "privacy@fastapi_comm.com",
+      email: "privacy@Fastkart.com",
       description: "If you have any questions about our use of cookies or other technologies, please contact us at"
     }
   }

@@ -17,19 +17,19 @@ export interface TermsOfServiceData {
 const termsOfServiceData: TermsOfServiceData = {
   title: "Terms of Service",
   lastUpdated: "February 2, 2025",
-  introduction: "Welcome to fastapi_comm. These Terms of Service govern your access to and use of our website and services. By accessing or using our services, you agree to be bound by these terms.",
+  introduction: "Welcome to Fastkart. These Terms of Service govern your access to and use of our website and services. By accessing or using our services, you agree to be bound by these terms.",
   sections: [
     {
       title: "Acceptance of Terms",
       content: [
-        "By accessing and using fastapi_comm, you accept and agree to be bound by the terms and provision of this agreement.",
+        "By accessing and using Fastkart, you accept and agree to be bound by the terms and provision of this agreement.",
         "If you do not agree to abide by the above, please do not use this service."
       ]
     },
     {
       title: "Use License",
       content: [
-        "Permission is granted to temporarily access the materials on fastapi_comm's website for personal, non-commercial transitory viewing only.",
+        "Permission is granted to temporarily access the materials on Fastkart's website for personal, non-commercial transitory viewing only.",
         "This is the grant of a license, not a transfer of title, and under this license you may not: modify or copy the materials; use the materials for any commercial purpose or for any public display; attempt to reverse engineer any software contained on the website; or remove any copyright or other proprietary notations from the materials."
       ]
     },
@@ -66,14 +66,14 @@ const termsOfServiceData: TermsOfServiceData = {
     {
       title: "Intellectual Property",
       content: [
-        "The service and its original content, features, and functionality are and will remain the exclusive property of fastapi_comm and its licensors.",
+        "The service and its original content, features, and functionality are and will remain the exclusive property of Fastkart and its licensors.",
         "The service is protected by copyright, trademark, and other laws. Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent."
       ]
     },
     {
       title: "Limitation of Liability",
       content: [
-        "In no event shall fastapi_comm, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the service."
+        "In no event shall Fastkart, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the service."
       ]
     },
     {
@@ -86,13 +86,13 @@ const termsOfServiceData: TermsOfServiceData = {
     {
       title: "Governing Law",
       content: [
-        "These Terms shall be interpreted and governed by the laws of the jurisdiction in which fastapi_comm operates, without regard to its conflict of law provisions.",
+        "These Terms shall be interpreted and governed by the laws of the jurisdiction in which Fastkart operates, without regard to its conflict of law provisions.",
         "Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights."
       ]
     }
   ],
   contact: {
-    email: "legal@fastapi_comm.com",
+    email: "legal@Fastkart.com",
     description: "If you have any questions about these Terms of Service, please contact us at"
   }
 }

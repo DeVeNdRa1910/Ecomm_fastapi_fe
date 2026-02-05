@@ -23,13 +23,13 @@ export interface CookiePolicyData {
 const cookiePolicyData: CookiePolicyData = {
   title: "Cookie Policy",
   lastUpdated: "February 2, 2025",
-  introduction: "This Cookie Policy explains how fastapi_comm ('we', 'us', or 'our') uses cookies and similar technologies to recognize you when you visit our website at fastapi_comm.com. It explains what these technologies are and why we use them, as well as your rights to control our use of them. In some cases we may use cookies to collect personal information, or that becomes personal information if we combine it with other information.",
+  introduction: "This Cookie Policy explains how Fastkart ('we', 'us', or 'our') uses cookies and similar technologies to recognize you when you visit our website at Fastkart.com. It explains what these technologies are and why we use them, as well as your rights to control our use of them. In some cases we may use cookies to collect personal information, or that becomes personal information if we combine it with other information.",
   sections: [
     {
       title: "1. What Are Cookies",
       content: [
         "Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.",
-        "Cookies set by the website owner (in this case, fastapi_comm) are called 'first-party cookies'. Cookies set by parties other than the website owner are called 'third-party cookies'. Third-party cookies enable third-party features or functionality to be provided on or through the website (e.g., advertising, interactive content, and analytics).",
+        "Cookies set by the website owner (in this case, Fastkart) are called 'first-party cookies'. Cookies set by parties other than the website owner are called 'third-party cookies'. Third-party cookies enable third-party features or functionality to be provided on or through the website (e.g., advertising, interactive content, and analytics).",
         "The parties that set these third-party cookies can recognize your computer both when it visits the website in question and also when it visits certain other websites. We use both first-party and third-party cookies for several reasons.",
         "Cookies can be 'persistent' or 'session' cookies. Persistent cookies remain on your personal computer or mobile device when you go offline, while session cookies are deleted as soon as you close your web browser."
       ]
@@ -134,7 +134,7 @@ const cookiePolicyData: CookiePolicyData = {
     }
   ],
   contact: {
-    email: "privacy@fastapi_comm.com",
+    email: "privacy@Fastkart.com",
     description: "If you have any questions about our use of cookies or other technologies, please contact us at"
   }
 }

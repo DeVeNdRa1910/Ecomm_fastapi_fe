@@ -34,10 +34,10 @@ export default function PrivacyPolicyPage() {
   const policyData = data || {
     title: "Privacy Policy",
     lastUpdated: "February 2, 2025",
-    introduction: "At fastapi_comm, we are committed to protecting your privacy.",
+    introduction: "At Fastkart, we are committed to protecting your privacy.",
     sections: [],
     contact: {
-      email: "privacy@fastapi_comm.com",
+      email: "privacy@Fastkart.com",
       description: "If you have any questions about this Privacy Policy, please contact us at"
     }
   }

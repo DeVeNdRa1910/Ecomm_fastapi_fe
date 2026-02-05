@@ -13,13 +13,14 @@ import {
 } from "@/components/ui/navigation-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { UserProfile } from "@/components/user-profile"
+import { FastkartLogo } from "@/components/fastkart-logo"
 import { tokenManager } from "@/lib/cookies"
 import { useAuthStore } from "@/store/useAuthStore"
 import { ShoppingCart } from "lucide-react"
 
 export function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const { user, isAuthenticated: isAuthFromStore } = useAuthStore()
+  const { user } = useAuthStore()
 
   useEffect(() => {
     // Check if user is authenticated
@@ -54,9 +55,7 @@ export function Header() {
         <div className="relative flex items-center justify-between h-full w-full">
           {/* Left: Logo */}
           <div className="flex items-center shrink-0">
-            <Link href="/" className="text-xl font-bold text-primary shadow-md hover:shadow-lg transition-shadow">
-              fastapi_comm
-            </Link>
+            <FastkartLogo size="md" className="shadow-md hover:shadow-lg transition-shadow" />
           </div>
 
           {/* Center: Navigation Menu - Perfectly centered */}

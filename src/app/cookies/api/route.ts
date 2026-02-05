@@ -22,13 +22,13 @@ export interface CookiePolicyData {
 const cookiePolicyData: CookiePolicyData = {
   title: "Cookie Policy",
   lastUpdated: "February 2, 2025",
-  introduction: "This Cookie Policy explains how fastapi_comm uses cookies and similar technologies to recognize you when you visit our website. It explains what these technologies are and why we use them, as well as your rights to control our use of them.",
+  introduction: "This Cookie Policy explains how Fastkart uses cookies and similar technologies to recognize you when you visit our website. It explains what these technologies are and why we use them, as well as your rights to control our use of them.",
   sections: [
     {
       title: "What Are Cookies",
       content: [
         "Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.",
-        "Cookies set by the website owner (in this case, fastapi_comm) are called 'first-party cookies'. Cookies set by parties other than the website owner are called 'third-party cookies'."
+        "Cookies set by the website owner (in this case, Fastkart) are called 'first-party cookies'. Cookies set by parties other than the website owner are called 'third-party cookies'."
       ]
     },
     {
@@ -84,7 +84,7 @@ const cookiePolicyData: CookiePolicyData = {
     }
   ],
   contact: {
-    email: "privacy@fastapi_comm.com",
+    email: "privacy@Fastkart.com",
     description: "If you have any questions about our use of cookies or other technologies, please contact us at"
   }
 }

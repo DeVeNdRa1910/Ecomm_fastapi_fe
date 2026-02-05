@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { FastkartLogo } from "@/components/fastkart-logo"
 
 export function Footer({ ...props }: React.HTMLAttributes<HTMLElement>) {
   return (
@@ -7,7 +8,7 @@ export function Footer({ ...props }: React.HTMLAttributes<HTMLElement>) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-primary">fastapi_comm</h3>
+            <FastkartLogo size="md" />
             <p className="text-sm text-muted-foreground">
               Your trusted e-commerce platform for quality products and exceptional service.
             </p>
@@ -124,7 +125,7 @@ export function Footer({ ...props }: React.HTMLAttributes<HTMLElement>) {
         </div>
 
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} fastapi_comm. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Fastkart. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -17,7 +17,7 @@ export interface PrivacyPolicyData {
 const privacyPolicyData: PrivacyPolicyData = {
   title: "Privacy Policy",
   lastUpdated: "February 2, 2025",
-  introduction: "At fastapi_comm, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website, use our mobile application, or make a purchase from us. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site.",
+  introduction: "At Fastkart, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website, use our mobile application, or make a purchase from us. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site.",
   sections: [
     {
       title: "1. Information We Collect",
@@ -116,7 +116,7 @@ const privacyPolicyData: PrivacyPolicyData = {
     }
   ],
   contact: {
-    email: "privacy@fastapi_comm.com",
+    email: "privacy@Fastkart.com",
     description: "If you have any questions, concerns, or requests regarding this Privacy Policy or our privacy practices, please contact us at"
   }
 }
