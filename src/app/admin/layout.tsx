@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useAuthStore } from "@/store/useAuthStore"
 import { tokenManager } from "@/lib/cookies"
 import { authApi } from "@/lib/auth-api"
+import { useThemeColorStore, applyThemeColor } from "@/store/useThemeColorStore"
 import { 
   LayoutDashboard, 
   Package, 
@@ -36,6 +37,9 @@ export default function AdminLayout({
     // Set admin theme attribute
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-admin', 'true')
+      // Apply theme color after setting admin attribute
+      const { primaryColor } = useThemeColorStore.getState()
+      applyThemeColor(primaryColor)
     }
 
     const checkAuth = async () => {

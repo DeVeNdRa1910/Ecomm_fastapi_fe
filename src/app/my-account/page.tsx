@@ -40,9 +40,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { AnimatedBackground } from "@/components/animated-background"
 import { FileUpload } from "@/components/ui/file-upload"
+import { Palette, RotateCcw } from "lucide-react"
+import { useThemeColorStore } from "@/store/useThemeColorStore"
+import { useTheme } from "next-themes"
 
 const changePasswordSchema = z
   .object({
@@ -125,6 +127,9 @@ export default function MyAccountPage() {
   const router = useRouter()
   const { success, error: showError } = useToast()
   const { user: userInfo, setUser, clearUser } = useAuthStore()
+  const { primaryColor, setPrimaryColor } = useThemeColorStore()
+  const { theme } = useTheme()
+  const [currentColor, setCurrentColor] = useState(primaryColor)
 
   const {
     register,
@@ -391,7 +396,7 @@ export default function MyAccountPage() {
       }
     }
 
-    let remainingAddress = address.trim()
+    const remainingAddress = address.trim()
     let pincode = ""
     let state = "" as IndianState | ""
     let city = ""
@@ -576,6 +581,47 @@ export default function MyAccountPage() {
     setImageError(false)
   }, [userInfo?.profile_image])
 
+  // Sync theme color state
+  useEffect(() => {
+    setCurrentColor(primaryColor)
+  }, [primaryColor])
+
+  const handlePresetColorChange = (color: string) => {
+    setCurrentColor(color)
+    setPrimaryColor(color)
+    success("Theme color updated!")
+  }
+
+  const handleColorInputChange = (color: string) => {
+    setCurrentColor(color)
+    setPrimaryColor(color)
+  }
+
+  const handleColorInputBlur = () => {
+    // Show toast only when user finishes selecting color from color picker
+    success("Theme color updated!")
+  }
+
+  const handleResetColor = () => {
+    const isDark = theme === "dark"
+    const defaultColor = isDark ? "#ff6600" : "#22c55e"
+    setCurrentColor(defaultColor)
+    setPrimaryColor(defaultColor)
+    success("Theme color reset to default!")
+  }
+
+  // Preset colors for quick selection
+  const presetColors = [
+    { name: "Blue", value: "#3b82f6" },
+    { name: "Green", value: "#22c55e" },
+    { name: "Orange", value: "#ff6600" },
+    { name: "Purple", value: "#a855f7" },
+    { name: "Pink", value: "#ec4899" },
+    { name: "Red", value: "#ef4444" },
+    { name: "Teal", value: "#14b8a6" },
+    { name: "Indigo", value: "#6366f1" },
+  ]
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col relative" data-scroll-section>
@@ -657,7 +703,7 @@ export default function MyAccountPage() {
             <p className="text-muted-foreground mt-2">Manage your account settings and preferences</p>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
             {/* User Profile Card */}
             <Card className="shadow-xl">
               <CardHeader>
@@ -1069,8 +1115,9 @@ export default function MyAccountPage() {
               </CardContent>
             </Card>
 
+            <div className="grid gap-6 lg:grid-cols-5">
             {/* Change Password Card */}
-            <Card className="shadow-xl">
+            <Card className="shadow-xl lg:col-span-2">
               <CardHeader>
                 <CardTitle>Change Password</CardTitle>
                 <CardDescription>Update your password to keep your account secure</CardDescription>
@@ -1136,6 +1183,126 @@ export default function MyAccountPage() {
                 </CardFooter>
               </form>
             </Card>
+
+            {/* Theme Customization Card */}
+            <Card className="shadow-xl lg:col-span-3">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Theme Customization
+                </CardTitle>
+                <CardDescription>
+                  Customize the primary color of your theme
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Color Picker */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="theme-color" className="text-base font-medium">
+                      Primary Color
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Choose a color to customize your theme. Black and white colors
+                      for dark and light modes remain unchanged.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    {/* Color Input */}
+                    <div className="relative">
+                      <input
+                        type="color"
+                        id="theme-color"
+                        value={currentColor}
+                        onChange={(e) => handleColorInputChange(e.target.value)}
+                        onBlur={handleColorInputBlur}
+                        className="h-16 w-16 rounded-lg border-2 border-border cursor-pointer shadow-lg"
+                        style={{
+                          backgroundColor: currentColor,
+                        }}
+                      />
+                    </div>
+
+                    {/* Color Display */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="h-12 w-24 rounded-lg border-2 border-border shadow-md"
+                          style={{ backgroundColor: currentColor }}
+                        />
+                        <div>
+                          <p className="font-mono text-sm font-medium">
+                            {currentColor.toUpperCase()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Current theme color
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Reset Button */}
+                    <Button
+                      variant="outline"
+                      onClick={handleResetColor}
+                      className="shadow-md"
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Reset
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Preset Colors */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Quick Select</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Choose from popular color presets
+                  </p>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
+                    {presetColors.map((preset) => (
+                      <button
+                        key={preset.value}
+                        onClick={() => handlePresetColorChange(preset.value)}
+                        className={`relative h-12 w-12 rounded-lg border-2 transition-all hover:scale-110 hover:shadow-lg ${
+                          currentColor.toLowerCase() === preset.value.toLowerCase()
+                            ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background scale-110"
+                            : "border-border"
+                        }`}
+                        style={{ backgroundColor: preset.value }}
+                        title={preset.name}
+                        aria-label={`Select ${preset.name} color`}
+                      >
+                        {currentColor.toLowerCase() === preset.value.toLowerCase() && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="h-2 w-2 rounded-full bg-white shadow-md" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="space-y-3 pt-4 border-t">
+                  <Label className="text-base font-medium">Preview</Label>
+                  <div className="flex flex-wrap gap-3">
+                    <Button className="shadow-md">Primary Button</Button>
+                    <Button variant="secondary" className="shadow-md">
+                      Secondary Button
+                    </Button>
+                    <Button variant="outline" className="shadow-md">
+                      Outline Button
+                    </Button>
+                    <div className="px-4 py-2 rounded-md bg-primary/10 text-primary font-medium">
+                      Primary Text
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            </div>
           </div>
         </div>
       </main>
