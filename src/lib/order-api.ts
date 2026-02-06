@@ -56,6 +56,14 @@ export interface SellerUser {
 
 export type GetSellerUsersResponse = SellerUser[]
 
+export interface MonthlyGrowthResponse {
+  current_month: string
+  previous_month: string
+  current_month_sales: number
+  previous_month_sales: number
+  growth_percentage: number
+}
+
 export const orderApi = {
   // API: POST /order/create-order
   createOrder: async (data: CreateOrderRequest): Promise<CreateOrderResponseObject> => {
@@ -74,6 +82,10 @@ export const orderApi = {
   // API: GET /order/seller/users/export (export users data as CSV)
   exportSellerUsers: async (): Promise<Blob> => {
     return api.downloadFile("/order/seller/users/export")
+  },
+  // API: GET /order/seller/growth (get monthly growth data)
+  getMonthlyGrowth: async (): Promise<MonthlyGrowthResponse> => {
+    return api.get<MonthlyGrowthResponse>("/order/seller/growth")
   },
 }
 
